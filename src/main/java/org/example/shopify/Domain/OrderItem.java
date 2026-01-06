@@ -17,10 +17,10 @@ public class OrderItem {
     private int quantity;
 
     @Column(name = "purchased_price")
-    private Double purchasedPrice; // snapshot of the retail_price when the order was placed
+    private double purchasedPrice; // snapshot of the retail_price when the order was placed
 
     @Column(name = "wholesale_price")
-    private Double wholesalePrice;
+    private double wholesalePrice;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")

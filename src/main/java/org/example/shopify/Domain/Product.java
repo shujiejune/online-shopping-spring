@@ -24,8 +24,8 @@ public class Product {
     private int quantity;
 
     @Column(name = "retail_price")
-    private Double retailPrice; // current price displayed to users
+    private double retailPrice; // current price displayed to users
 
     @Column(name = "wholesale_price")
-    private Double wholesalePrice; // the cost admin paid to buy this product from manufacturer
+    private double wholesalePrice; // the cost admin paid to buy this product from manufacturer
 }
