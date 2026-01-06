@@ -1,14 +1,15 @@
 package org.example.shopify.DAO.impl;
 
 import org.example.shopify.DAO.ProductDAO;
+import org.example.shopify.Domain.Order;
+import org.example.shopify.Domain.OrderItem;
+import org.example.shopify.Domain.OrderStatus;
 import org.example.shopify.Domain.Product;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,6 +37,24 @@ public class ProductDAOImpl implements ProductDAO {
         cq.select(product).where(cb.gt(product.get("quantity"), 0));
 
         return em.createQuery(cq).getResultList();
+    }
+
+    @Override
+    public List<Product> getProductsByUserId(Long userId, int limit) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Product> cq = cb.createQuery(Product.class);
+        Root<OrderItem> orderItem = cq.from(OrderItem.class);
+
+        Join<OrderItem, Order> orderJoin = orderItem.join("order");
+        cq.select(orderItem.get("product")).distinct(true);
+
+        Predicate userPredicate = cb.equal(orderJoin.get("user").get("id"), userId);
+        Predicate notCancelledPredicate = cb.notEqual(orderJoin.get("orderStatus"), OrderStatus.Cancelled);
+
+        cq.where(cb.and(userPredicate, notCancelledPredicate));
+        cq.orderBy(cb.desc(orderItem.get("id")));
+
+        return em.createQuery(cq).setMaxResults(limit).getResultList();
     }
 
     @Override
