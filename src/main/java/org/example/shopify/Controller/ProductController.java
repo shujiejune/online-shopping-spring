@@ -25,6 +25,6 @@ public class ProductController {
 
     @GetMapping("/{id}")
     public Product getProductDetails(@PathVariable Long id) {
-        return productDAO.getProductById(id).orElseThrow();
+        return productDAO.getProductById(id).orElseThrow(() -> new RuntimeException("Product not found"));
     }
 }
