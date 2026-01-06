@@ -3,6 +3,7 @@ package org.example.shopify.Service;
 import org.example.shopify.DAO.UserDAO;
 import org.example.shopify.Domain.User;
 import org.example.shopify.Exception.InvalidCredentialsException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -11,9 +12,11 @@ import java.util.Optional;
 @Service
 public class UserService {
     private final UserDAO userDAO;
+    private final BCryptPasswordEncoder pwdEncoder;
 
-    public UserService(UserDAO userDAO) {
+    public UserService(UserDAO userDAO, BCryptPasswordEncoder pwdEncoder) {
         this.userDAO = userDAO;
+        this.pwdEncoder = pwdEncoder;
     }
 
     @Transactional
@@ -24,6 +27,9 @@ public class UserService {
         if (userDAO.getUserByEmail(user.getEmail()).isPresent()) {
             throw new RuntimeException("Email already exists");
         }
+
+        String encodedPwd = pwdEncoder.encode(user.getPassword());
+        user.setPassword(encodedPwd);
 
         user.setRole(1);
 
@@ -37,7 +43,7 @@ public class UserService {
         }
 
         User user = userOptional.get();
-        if (!user.getPassword().equals(password)) {
+        if (!pwdEncoder.matches(password, user.getPassword())) {
             throw new InvalidCredentialsException("Incorrect credentials, please try again.");
         }
 
