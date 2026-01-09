@@ -1,7 +1,6 @@
 package org.example.shopify.DAO;
 
 import org.example.shopify.Domain.Order;
-import org.example.shopify.Domain.User;
 
 import java.util.List;
 import java.util.Optional;

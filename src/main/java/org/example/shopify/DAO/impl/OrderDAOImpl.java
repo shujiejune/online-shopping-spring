@@ -21,7 +21,10 @@ public class OrderDAOImpl implements OrderDAO {
 
     @Override
     public List<Order> getOrdersByUserId(Long userId) {
-        return em.createQuery("FROM Order o WHERE o.user.id = :userId", Order.class)
+        return em.createQuery("SELECT DISTINCT o FROM Order o " +
+                        "LEFT JOIN FETCH o.orderItems i " +
+                        "LEFT JOIN FETCH i.product " +
+                        "WHERE o.user.id = :userId", Order.class)
                 .setParameter("userId", userId).getResultList();
     }
 
@@ -36,6 +39,7 @@ public class OrderDAOImpl implements OrderDAO {
                 .getSingleResult();
     }
 
+    @Override
     public List<Order> getPaginatedOrders(int page, int pageSize) {
         return em.createQuery(
                         "SELECT o FROM Order o JOIN FETCH o.user ORDER BY o.datePlaced DESC", Order.class)
