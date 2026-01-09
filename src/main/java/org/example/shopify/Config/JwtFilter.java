@@ -65,8 +65,8 @@ public class JwtFilter extends OncePerRequestFilter {
             List<SimpleGrantedAuthority> authorities = new ArrayList<>();
 
             if (roleInt != null) {
-                // ASSUMPTION: 1 = Admin, 0 = User
-                if (roleInt == 1) {
+                // ASSUMPTION: 0 = Admin, 1 = User
+                if (roleInt == 0) {
                     authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
                 } else {
                     authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
