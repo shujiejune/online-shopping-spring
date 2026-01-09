@@ -5,6 +5,7 @@ import org.example.shopify.DTO.ProductResponseDTO;
 import org.example.shopify.Domain.Product;
 import org.example.shopify.Domain.User;
 import org.example.shopify.Domain.Watchlist;
+import org.example.shopify.Exception.ResourceNotFoundException;
 import org.example.shopify.Service.WatchlistService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,7 +28,7 @@ public class WatchlistController {
     @PostMapping("/add/{productId}")
     public ResponseEntity<String> addToWatchlist(@PathVariable Long productId) {
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        User user = userDAO.getUserByUsername(username).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userDAO.getUserByUsername(username).orElseThrow(() -> new ResourceNotFoundException("User not found"));
         watchlistService.addToWatchlist(user.getId(), productId);
         return ResponseEntity.ok("Product added to watchlist");
     }
@@ -35,7 +36,7 @@ public class WatchlistController {
     @DeleteMapping("/remove/{productId}")
     public ResponseEntity<String> removeFromWatchlist(@PathVariable Long productId) {
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        User user = userDAO.getUserByUsername(username).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userDAO.getUserByUsername(username).orElseThrow(() -> new ResourceNotFoundException("User not found"));
         watchlistService.removeFromWatchlist(user.getId(), productId);
         return ResponseEntity.ok("Product removed from watchlist");
     }
@@ -43,7 +44,7 @@ public class WatchlistController {
     @GetMapping
     public ResponseEntity<List<ProductResponseDTO>> getMyWatchlist() {
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        User user = userDAO.getUserByUsername(username).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userDAO.getUserByUsername(username).orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         // 1. Get the list of Watchlist entities from the service
         List<Watchlist> watchlistEntries = watchlistService.getInStockWatchlist(user.getId());

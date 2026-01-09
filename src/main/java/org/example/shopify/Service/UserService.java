@@ -3,6 +3,7 @@ package org.example.shopify.Service;
 import org.example.shopify.DAO.UserDAO;
 import org.example.shopify.Domain.User;
 import org.example.shopify.Exception.InvalidCredentialsException;
+import org.example.shopify.Exception.UserAlreadyExistsException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -22,10 +23,10 @@ public class UserService {
     @Transactional
     public void register(User user) {
         if (userDAO.getUserByUsername(user.getUsername()).isPresent()) {
-            throw new RuntimeException("Username already exists");
+            throw new UserAlreadyExistsException("Username already exists");
         }
         if (userDAO.getUserByEmail(user.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already exists");
+            throw new UserAlreadyExistsException("Email already exists");
         }
 
         String encodedPwd = pwdEncoder.encode(user.getPassword());

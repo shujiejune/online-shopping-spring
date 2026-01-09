@@ -6,6 +6,7 @@ import org.example.shopify.DAO.WatchlistDAO;
 import org.example.shopify.Domain.Product;
 import org.example.shopify.Domain.User;
 import org.example.shopify.Domain.Watchlist;
+import org.example.shopify.Exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,9 +27,9 @@ public class WatchlistService {
     @Transactional
     public void addToWatchlist(Long userId, Long productId) {
         User user = userDAO.getUserById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         Product product = productDAO.getProductById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         Watchlist item = new Watchlist();
         item.setUser(user);

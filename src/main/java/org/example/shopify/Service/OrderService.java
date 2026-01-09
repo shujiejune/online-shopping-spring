@@ -3,6 +3,7 @@ package org.example.shopify.Service;
 import org.example.shopify.DAO.OrderDAO;
 import org.example.shopify.DAO.ProductDAO;
 import org.example.shopify.Domain.*;
+import org.example.shopify.Exception.IllegalOrderStateException;
 import org.example.shopify.Exception.NotEnoughInventoryException;
 import org.springframework.stereotype.Service;
 
@@ -71,7 +72,7 @@ public class OrderService {
             return;
         }
         if (order.getOrderStatus() == OrderStatus.Completed) {
-            throw new RuntimeException("Cannot cancel completed order.");
+            throw new IllegalOrderStateException("Cannot cancel completed order.");
         }
 
         for (OrderItem orderItem : order.getOrderItems()) {
@@ -90,7 +91,7 @@ public class OrderService {
         Order order = orderDAO.getOrderById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
 
         if (order.getOrderStatus() != OrderStatus.Processing) {
-            throw new RuntimeException("Cannot complete order that is not in progress.");
+            throw new IllegalOrderStateException("Cannot complete order that is not in progress.");
         }
 
         order.setOrderStatus(OrderStatus.Completed);

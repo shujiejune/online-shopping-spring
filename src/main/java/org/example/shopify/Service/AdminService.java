@@ -9,6 +9,7 @@ import org.example.shopify.Domain.Order;
 import org.example.shopify.Domain.OrderItem;
 import org.example.shopify.Domain.OrderStatus;
 import org.example.shopify.Domain.Product;
+import org.example.shopify.Exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,7 +60,7 @@ public class AdminService {
     @Transactional
     public void updateProduct(Long id, Product updatedData) {
         Product existing = productDAO.getProductById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         existing.setDescription(updatedData.getDescription());
         existing.setWholesalePrice(updatedData.getWholesalePrice());

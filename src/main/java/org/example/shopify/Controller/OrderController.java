@@ -5,6 +5,7 @@ import org.example.shopify.DTO.ProductResponseDTO;
 import org.example.shopify.Domain.Order;
 import org.example.shopify.Domain.Product;
 import org.example.shopify.Domain.User;
+import org.example.shopify.Exception.ResourceNotFoundException;
 import org.example.shopify.Service.OrderService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -29,7 +30,7 @@ public class OrderController {
     public ResponseEntity<List<Order>> getMyOrders() {
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User currentUser = userDAO.getUserByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         return ResponseEntity.ok(orderService.getOrdersByUserId(currentUser.getId()));
     }
@@ -38,7 +39,7 @@ public class OrderController {
     public ResponseEntity<List<ProductResponseDTO>> getRecentProducts(@RequestParam(defaultValue = "5") int limit) {
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User user = userDAO.getUserByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         List<Product> products = orderService.getRecentlyPurchasedProducts(user.getId(), limit);
 
@@ -59,7 +60,7 @@ public class OrderController {
     public ResponseEntity<String> placeOrder(@RequestBody Map<Long, Integer> items) {
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User currentUser = userDAO.getUserByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         orderService.createOrder(currentUser, items);
         return ResponseEntity.ok("Order placed successfully");
     }
