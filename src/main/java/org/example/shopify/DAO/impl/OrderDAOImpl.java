@@ -30,8 +30,15 @@ public class OrderDAOImpl implements OrderDAO {
         return em.createQuery("FROM Order o", Order.class).getResultList();
     }
 
+    @Override
+    public long getTotalOrdersCount() {
+        return em.createQuery("SELECT COUNT(o) FROM Order o", Long.class)
+                .getSingleResult();
+    }
+
     public List<Order> getPaginatedOrders(int page, int pageSize) {
-        return em.createQuery("FROM Order ORDER BY datePlaced DESC", Order.class)
+        return em.createQuery(
+                        "SELECT o FROM Order o JOIN FETCH o.user ORDER BY o.datePlaced DESC", Order.class)
                 .setFirstResult((page - 1) * pageSize)
                 .setMaxResults(pageSize)
                 .getResultList();

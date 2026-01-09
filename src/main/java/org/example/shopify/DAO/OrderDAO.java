@@ -10,6 +10,7 @@ public interface OrderDAO {
     Optional<Order> getOrderById(Long orderId);
     List<Order> getOrdersByUserId(Long userId);
     List<Order> getAllOrders();
+    long getTotalOrdersCount();
     List<Order> getPaginatedOrders(int page, int pageSize);
     void saveOrder(Order order);
 }

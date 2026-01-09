@@ -2,6 +2,7 @@ package org.example.shopify.Controller;
 
 import org.example.shopify.DAO.ProductDAO;
 import org.example.shopify.DTO.AdminSummaryDTO;
+import org.example.shopify.DTO.OrderPageResponseDTO;
 import org.example.shopify.DTO.ProductResponseDTO;
 import org.example.shopify.Domain.Order;
 import org.example.shopify.Domain.Product;
@@ -26,8 +27,8 @@ public class AdminController {
     }
 
     @GetMapping("/orders")
-    public ResponseEntity<List<Order>> getOrderDashboard(@RequestParam(defaultValue = "1") int page) {
-        return ResponseEntity.ok(adminService.getPaginatedOrders(page));
+    public ResponseEntity<OrderPageResponseDTO> getOrders(@RequestParam(defaultValue = "1") int page) {
+        return ResponseEntity.ok(adminService.getPaginatedOrderDashboard(page));
     }
 
     @PatchMapping("/orders/{id}/complete")

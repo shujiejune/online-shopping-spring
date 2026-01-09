@@ -2,6 +2,8 @@ package org.example.shopify.Service;
 
 import org.example.shopify.DAO.OrderDAO;
 import org.example.shopify.DAO.ProductDAO;
+import org.example.shopify.DTO.OrderPageResponseDTO;
+import org.example.shopify.DTO.OrderResponseDTO;
 import org.example.shopify.DTO.ProductResponseDTO;
 import org.example.shopify.Domain.Order;
 import org.example.shopify.Domain.OrderItem;
@@ -25,10 +27,28 @@ public class AdminService {
         this.productDAO = productDAO;
     }
 
-    public List<Order> getPaginatedOrders(int page) {
+    public OrderPageResponseDTO getPaginatedOrderDashboard(int page) {
         int pageSize = 5;
-        // Your OrderDAO should implement this using setFirstResult and setMaxResults
-        return orderDAO.getPaginatedOrders(page, pageSize);
+
+        List<Order> orders = orderDAO.getPaginatedOrders(page, pageSize);
+
+        long totalOrders = orderDAO.getTotalOrdersCount();
+        int totalPages = (int) Math.ceil((double) totalOrders / pageSize);
+
+        List<OrderResponseDTO> dtos = new ArrayList<>();
+        for (Order o : orders) {
+            OrderResponseDTO dto = new OrderResponseDTO();
+            dto.setOrderId(o.getId());
+            dto.setUsername(o.getUser().getUsername());
+            dto.setDatePlaced(o.getDatePlaced());
+            dto.setOrderStatus(o.getOrderStatus().toString());
+
+            // Leave dto.setItems(null) here because the dashboard list
+            // shouldn't show all products until the admin clicks a specific order.
+            dtos.add(dto);
+        }
+
+        return new OrderPageResponseDTO(dtos, page, totalPages, totalOrders);
     }
 
     @Transactional
