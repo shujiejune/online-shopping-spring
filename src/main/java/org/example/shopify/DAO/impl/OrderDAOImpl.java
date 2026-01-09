@@ -21,7 +21,7 @@ public class OrderDAOImpl implements OrderDAO {
 
     @Override
     public List<Order> getOrdersByUserId(Long userId) {
-        return em.createQuery("FROM Order o WHERE o.user_id = :userId", Order.class)
+        return em.createQuery("FROM Order o WHERE o.user.id = :userId", Order.class)
                 .setParameter("userId", userId).getResultList();
     }
 

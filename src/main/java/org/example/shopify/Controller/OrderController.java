@@ -1,6 +1,8 @@
 package org.example.shopify.Controller;
 
 import org.example.shopify.DAO.UserDAO;
+import org.example.shopify.DTO.OrderItemDTO;
+import org.example.shopify.DTO.OrderResponseDTO;
 import org.example.shopify.DTO.ProductResponseDTO;
 import org.example.shopify.Domain.Order;
 import org.example.shopify.Domain.Product;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -27,12 +30,34 @@ public class OrderController {
     }
 
     @GetMapping("/my-orders")
-    public ResponseEntity<List<Order>> getMyOrders() {
+    public ResponseEntity<List<OrderResponseDTO>> getMyOrders() {
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User currentUser = userDAO.getUserByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        return ResponseEntity.ok(orderService.getOrdersByUserId(currentUser.getId()));
+        List<Order> orders = orderService.getOrdersByUserId(currentUser.getId());
+
+        List<OrderResponseDTO> dtos = orders.stream().map(order -> {
+            OrderResponseDTO dto = new OrderResponseDTO();
+            dto.setOrderId(order.getId());
+            dto.setUsername(order.getUser().getUsername());
+            dto.setDatePlaced(order.getDatePlaced());
+            dto.setOrderStatus(order.getOrderStatus().toString());
+
+            List<OrderItemDTO> itemDtos = order.getOrderItems().stream().map(item -> {
+                OrderItemDTO itemDto = new OrderItemDTO();
+                itemDto.setProductName(item.getProduct().getName());
+                itemDto.setQuantity(item.getQuantity());
+                itemDto.setPurchasedPrice(item.getPurchasedPrice());
+                return itemDto;
+            }).collect(Collectors.toList());
+
+            dto.setItems(itemDtos);
+
+            return dto;
+        }).collect(Collectors.toList());
+
+        return ResponseEntity.ok(dtos);
     }
 
     @GetMapping("/recently-purchased")
