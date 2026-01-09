@@ -21,7 +21,7 @@ public class ProductController {
         this.productDAO = productDAO;
     }
 
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<List<ProductResponseDTO>> getAllProducts() {
         List<Product> products = productDAO.getInStockProducts();
         List<ProductResponseDTO> dtos = new ArrayList<>();
