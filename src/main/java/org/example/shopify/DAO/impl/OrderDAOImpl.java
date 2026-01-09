@@ -30,6 +30,13 @@ public class OrderDAOImpl implements OrderDAO {
         return em.createQuery("FROM Order o", Order.class).getResultList();
     }
 
+    public List<Order> getPaginatedOrders(int page, int pageSize) {
+        return em.createQuery("FROM Order ORDER BY datePlaced DESC", Order.class)
+                .setFirstResult((page - 1) * pageSize)
+                .setMaxResults(pageSize)
+                .getResultList();
+    }
+
     @Override
     public void saveOrder(Order order) {
         if  (order.getId() == null) {
