@@ -31,7 +31,13 @@ public class AdminController {
         return ResponseEntity.ok(adminService.getPaginatedOrderDashboard(page));
     }
 
-    @PatchMapping("/orders/{id}/complete")
+    @PutMapping("/orders/{id}/cancel")
+    public ResponseEntity<String> cancelOrder(@PathVariable Long id) {
+        adminService.cancelOrder(id);
+        return ResponseEntity.ok("Order has been cancelled and inventory restocked.");
+    }
+
+    @PutMapping("/orders/{id}/complete")
     public void completeOrder(@PathVariable Long id) {
         orderService.completeOrder(id);
     }

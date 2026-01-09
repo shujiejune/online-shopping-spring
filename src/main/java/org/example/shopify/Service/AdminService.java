@@ -4,7 +4,6 @@ import org.example.shopify.DAO.OrderDAO;
 import org.example.shopify.DAO.ProductDAO;
 import org.example.shopify.DTO.OrderPageResponseDTO;
 import org.example.shopify.DTO.OrderResponseDTO;
-import org.example.shopify.DTO.ProductResponseDTO;
 import org.example.shopify.Domain.Order;
 import org.example.shopify.Domain.OrderItem;
 import org.example.shopify.Domain.OrderStatus;
@@ -26,6 +25,28 @@ public class AdminService {
     public AdminService(OrderDAO orderDAO,  ProductDAO productDAO) {
         this.orderDAO = orderDAO;
         this.productDAO = productDAO;
+    }
+
+    @Transactional
+    public void cancelOrder(Long orderId) {
+        Order order = orderDAO.getOrderById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
+        if (order.getOrderStatus() == OrderStatus.Cancelled) {
+            return;
+        }
+
+        for (OrderItem item : order.getOrderItems()) {
+            Product product = item.getProduct();
+
+            int rolledbackQuantity = product.getQuantity() + item.getQuantity();
+            product.setQuantity(rolledbackQuantity);
+
+            productDAO.saveOrUpdateProduct(product);
+        }
+
+        order.setOrderStatus(OrderStatus.Cancelled);
+        orderDAO.saveOrder(order);
     }
 
     public OrderPageResponseDTO getPaginatedOrderDashboard(int page) {
