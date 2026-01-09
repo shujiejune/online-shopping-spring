@@ -7,6 +7,7 @@ import org.example.shopify.DTO.ProductResponseDTO;
 import org.example.shopify.Domain.Order;
 import org.example.shopify.Domain.Product;
 import org.example.shopify.Domain.User;
+import org.example.shopify.Exception.PermissionDeniedException;
 import org.example.shopify.Exception.ResourceNotFoundException;
 import org.example.shopify.Service.OrderService;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +28,35 @@ public class OrderController {
     public OrderController(OrderService orderService, UserDAO userDAO) {
         this.orderService = orderService;
         this.userDAO = userDAO;
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<OrderResponseDTO> getOrderDetails(@PathVariable Long id) {
+        String currentUsername = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Order order = orderService.getOrderDetails(id);
+
+        if (!order.getUser().getUsername().equals(currentUsername)) {
+            throw new PermissionDeniedException("You do not have permission to view this order.");
+        }
+
+        OrderResponseDTO dto = new OrderResponseDTO();
+        dto.setOrderId(order.getId());
+        dto.setDatePlaced(order.getDatePlaced());
+        dto.setOrderStatus(order.getOrderStatus().toString());
+        dto.setUsername(order.getUser().getUsername());
+
+        List<OrderItemDTO> itemDtos = order.getOrderItems().stream().map(item -> {
+            OrderItemDTO itemDto = new OrderItemDTO();
+            itemDto.setProductName(item.getProduct().getName());
+            itemDto.setQuantity(item.getQuantity());
+            itemDto.setPurchasedPrice(item.getPurchasedPrice());
+            return itemDto;
+        }).collect(Collectors.toList());
+
+        dto.setItems(itemDtos);
+
+        return ResponseEntity.ok(dto);
     }
 
     @GetMapping("/my-orders")

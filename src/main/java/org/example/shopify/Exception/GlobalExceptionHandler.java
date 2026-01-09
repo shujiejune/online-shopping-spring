@@ -35,6 +35,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
+    // 403 Forbidden
+    @ExceptionHandler(PermissionDeniedException.class)
+    public ResponseEntity<Object> handlePermissionDeniedException(PermissionDeniedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
+    }
+
     // Generic fallback for any other RuntimeExceptions
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<String> handleGeneralException(RuntimeException ex) {

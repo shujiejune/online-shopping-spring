@@ -5,6 +5,7 @@ import org.example.shopify.DAO.ProductDAO;
 import org.example.shopify.Domain.*;
 import org.example.shopify.Exception.IllegalOrderStateException;
 import org.example.shopify.Exception.NotEnoughInventoryException;
+import org.example.shopify.Exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -21,6 +22,11 @@ public class OrderService {
     public OrderService(OrderDAO orderDAO, ProductDAO productDAO) {
         this.orderDAO = orderDAO;
         this.productDAO = productDAO;
+    }
+
+    public Order getOrderDetails(Long orderId) {
+        return orderDAO.getOrderById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
     }
 
     public List<Order> getOrdersByUserId(Long userId) {
