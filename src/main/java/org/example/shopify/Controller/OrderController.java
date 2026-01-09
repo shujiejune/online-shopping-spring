@@ -11,6 +11,7 @@ import org.example.shopify.Exception.PermissionDeniedException;
 import org.example.shopify.Exception.ResourceNotFoundException;
 import org.example.shopify.Service.OrderService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,11 +33,19 @@ public class OrderController {
 
     @GetMapping("/{id}")
     public ResponseEntity<OrderResponseDTO> getOrderDetails(@PathVariable Long id) {
-        String currentUsername = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = authentication.getName();
+
+        // Check if the user has ROLE_ADMIN
+        // (This assumes your JwtFilter adds "ROLE_ADMIN" to authorities)
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        System.out.println("Current user: " + currentUsername);
+        System.out.println("Current admin: " + isAdmin);
 
         Order order = orderService.getOrderDetails(id);
 
-        if (!order.getUser().getUsername().equals(currentUsername)) {
+        if (!order.getUser().getUsername().equals(currentUsername) && !isAdmin) {
             throw new PermissionDeniedException("You do not have permission to view this order.");
         }
 

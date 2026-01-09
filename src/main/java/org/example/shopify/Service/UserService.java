@@ -32,7 +32,9 @@ public class UserService {
         String encodedPwd = pwdEncoder.encode(user.getPassword());
         user.setPassword(encodedPwd);
 
-        user.setRole(1);
+        if (user.getRole() == null) {
+            user.setRole(1);
+        }
 
         userDAO.saveUser(user);
     }
