@@ -62,6 +62,7 @@ public class AdminService {
         Product existing = productDAO.getProductById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
+        existing.setName(updatedData.getName());
         existing.setDescription(updatedData.getDescription());
         existing.setWholesalePrice(updatedData.getWholesalePrice());
         existing.setRetailPrice(updatedData.getRetailPrice());
