@@ -11,6 +11,7 @@ import org.example.shopify.Service.OrderService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -57,8 +58,17 @@ public class AdminController {
     public ResponseEntity<AdminSummaryDTO> getDashboardStats() {
         int sold = adminService.getTotalSoldItems();
         double profit = adminService.getTotalProfit();
-        List<ProductResponseDTO> top3 = adminService.getTopProducts(3);
+        List<Product> topProducts = adminService.getTopProducts(3);
 
-        return ResponseEntity.ok(new AdminSummaryDTO(sold, profit, top3));
+        List<ProductResponseDTO> topProductDTOs = new ArrayList<>();
+        for (Product p : topProducts) {
+            ProductResponseDTO dto = new ProductResponseDTO();
+            dto.setId(p.getId());
+            dto.setName(p.getName());
+            dto.setRetailPrice(p.getRetailPrice()); // Hide wholesale/quantity
+            topProductDTOs.add(dto);
+        }
+
+        return ResponseEntity.ok(new AdminSummaryDTO(sold, profit, topProductDTOs));
     }
 }

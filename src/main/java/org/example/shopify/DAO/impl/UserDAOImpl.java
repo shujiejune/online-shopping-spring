@@ -15,6 +15,13 @@ public class UserDAOImpl implements UserDAO {
     private EntityManager em;
 
     @Override
+    public Optional<User> getUserById(Long userId) {
+        List<User> users = em.createQuery("FROM User u WHERE u.id = :userId", User.class)
+                .setParameter("userId", userId).getResultList();
+        return users.stream().findFirst();
+    }
+
+    @Override
     public Optional<User> getUserByUsername(String username) {
         List<User> users = em.createQuery("FROM User u WHERE u.username = :username", User.class)
                 .setParameter("username", username).getResultList();

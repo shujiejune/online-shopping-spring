@@ -99,7 +99,7 @@ public class AdminService {
         return totalProfit;
     }
 
-    public List<ProductResponseDTO> getTopProducts(int limit) {
+    public List<Product> getTopProducts(int limit) {
         List<Order> allOrders = orderDAO.getAllOrders();
         Map<Product, Integer> counts = new HashMap<>();
 
@@ -115,16 +115,11 @@ public class AdminService {
         List<Map.Entry<Product, Integer>> list = new ArrayList<>(counts.entrySet());
         list.sort((a, b) -> b.getValue().compareTo(a.getValue()));
 
-        // Take the top X and convert to DTOs
-        List<ProductResponseDTO> topProducts = new ArrayList<>();
+        List<Product> topProducts = new ArrayList<>();
         for (int i = 0; i < Math.min(limit, list.size()); i++) {
-            Product p = list.get(i).getKey();
-            ProductResponseDTO dto = new ProductResponseDTO();
-            dto.setId(p.getId());
-            dto.setName(p.getName());
-            dto.setRetailPrice(p.getRetailPrice());
-            topProducts.add(dto);
+            topProducts.add(list.get(i).getKey());
         }
+
         return topProducts;
     }
 }
