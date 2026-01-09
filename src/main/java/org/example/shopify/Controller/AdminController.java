@@ -4,7 +4,6 @@ import org.example.shopify.DAO.ProductDAO;
 import org.example.shopify.DTO.AdminSummaryDTO;
 import org.example.shopify.DTO.OrderPageResponseDTO;
 import org.example.shopify.DTO.ProductResponseDTO;
-import org.example.shopify.Domain.Order;
 import org.example.shopify.Domain.Product;
 import org.example.shopify.Service.AdminService;
 import org.example.shopify.Service.OrderService;
