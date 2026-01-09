@@ -20,11 +20,10 @@ public class JwtProvider {
 
     private final long EXPIRATION_HOURS = 24;
 
-    public String createToken(String username) {
+    public String createToken(String username, int userRole) {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime expiry = now.plusHours(EXPIRATION_HOURS);
 
-        // Convert to Date for JJWT compatibility
         Date issuedAt = Date.from(now.atZone(ZoneId.systemDefault()).toInstant());
         Date expiresAt = Date.from(expiry.atZone(ZoneId.systemDefault()).toInstant());
 
@@ -33,6 +32,7 @@ public class JwtProvider {
 
         return Jwts.builder()
                 .setSubject(username)
+                .claim("role", userRole)
                 .setIssuedAt(issuedAt)
                 .setExpiration(expiresAt)
                 .signWith(key, SignatureAlgorithm.HS256)
