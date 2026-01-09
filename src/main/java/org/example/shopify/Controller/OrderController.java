@@ -99,27 +99,6 @@ public class OrderController {
         return ResponseEntity.ok(dtos);
     }
 
-    @GetMapping("/recently-purchased")
-    public ResponseEntity<List<ProductResponseDTO>> getRecentProducts(@RequestParam(defaultValue = "5") int limit) {
-        String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        User user = userDAO.getUserByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
-        List<Product> products = orderService.getRecentlyPurchasedProducts(user.getId(), limit);
-
-        List<ProductResponseDTO> dtos = new ArrayList<>();
-        for (Product p : products) {
-            ProductResponseDTO dto = new ProductResponseDTO();
-            dto.setId(p.getId());
-            dto.setName(p.getName());
-            dto.setDescription(p.getDescription());
-            dto.setRetailPrice(p.getRetailPrice());
-            dtos.add(dto);
-        }
-
-        return ResponseEntity.ok(dtos);
-    }
-
     @PostMapping("/place")
     public ResponseEntity<String> placeOrder(@RequestBody Map<Long, Integer> items) {
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();

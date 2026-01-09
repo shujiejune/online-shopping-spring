@@ -40,24 +40,6 @@ public class ProductDAOImpl implements ProductDAO {
     }
 
     @Override
-    public List<Product> getProductsByUserId(Long userId, int limit) {
-        CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<Product> cq = cb.createQuery(Product.class);
-        Root<OrderItem> orderItem = cq.from(OrderItem.class);
-
-        Join<OrderItem, Order> orderJoin = orderItem.join("order");
-        cq.select(orderItem.get("product")).distinct(true);
-
-        Predicate userPredicate = cb.equal(orderJoin.get("user").get("id"), userId);
-        Predicate notCancelledPredicate = cb.notEqual(orderJoin.get("orderStatus"), OrderStatus.Cancelled);
-
-        cq.where(cb.and(userPredicate, notCancelledPredicate));
-        cq.orderBy(cb.desc(orderItem.get("id")));
-
-        return em.createQuery(cq).setMaxResults(limit).getResultList();
-    }
-
-    @Override
     public void saveOrUpdateProduct(Product product) {
         if (product.getId() == null) {
             em.persist(product);

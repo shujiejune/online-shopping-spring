@@ -33,10 +33,6 @@ public class OrderService {
         return orderDAO.getOrdersByUserId(userId);
     }
 
-    public List<Product> getRecentlyPurchasedProducts(Long userId, int limit) {
-        return productDAO.getProductsByUserId(userId, limit);
-    }
-
     @Transactional
     public void createOrder(User user, Map<Long, Integer> items) {
         Order order = new Order();

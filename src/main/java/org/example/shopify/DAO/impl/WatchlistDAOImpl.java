@@ -33,7 +33,7 @@ public class WatchlistDAOImpl implements WatchlistDAO {
         Root<Watchlist> watchlist = cq.from(Watchlist.class);
 
         Join<Object, Object> productJoin = watchlist.join("product");
-        Predicate userPredicate = cb.equal(productJoin.get("user").get("id"), userId);
+        Predicate userPredicate = cb.equal(watchlist.get("user").get("id"), userId);
         Predicate stockPredicate = cb.gt(productJoin.get("quantity"), 0);
 
         cq.where(cb.and(userPredicate, stockPredicate));
