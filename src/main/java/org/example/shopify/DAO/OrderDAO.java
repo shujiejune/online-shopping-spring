@@ -1,6 +1,7 @@
 package org.example.shopify.DAO;
 
 import org.example.shopify.Domain.Order;
+import org.example.shopify.Domain.Product;
 
 import java.util.List;
 import java.util.Optional;
@@ -12,4 +13,6 @@ public interface OrderDAO {
     long getTotalOrdersCount();
     List<Order> getPaginatedOrders(int page, int pageSize);
     void saveOrder(Order order);
+    List<Product> getMostPopularProducts(int limit);
+    List<Product> getMostProfitableProducts(int limit);
 }

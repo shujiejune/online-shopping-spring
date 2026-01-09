@@ -2,6 +2,8 @@ package org.example.shopify.DAO.impl;
 
 import org.example.shopify.DAO.OrderDAO;
 import org.example.shopify.Domain.Order;
+import org.example.shopify.Domain.OrderStatus;
+import org.example.shopify.Domain.Product;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
@@ -55,5 +57,35 @@ public class OrderDAOImpl implements OrderDAO {
         } else {
             em.merge(order);
         }
+    }
+
+    @Override
+    public List<Product> getMostPopularProducts(int limit) {
+        String hql = "SELECT oi.product " +
+                "FROM Order o " +
+                "JOIN o.orderItems oi " +
+                "WHERE o.orderStatus = :status " +
+                "GROUP BY oi.product " +
+                "ORDER BY SUM(oi.quantity) DESC";
+
+        return em.createQuery(hql, Product.class)
+                .setParameter("status", OrderStatus.Completed)
+                .setMaxResults(limit)
+                .getResultList();
+    }
+
+    @Override
+    public List<Product> getMostProfitableProducts(int limit) {
+        String hql = "SELECT oi.product " +
+                "FROM Order o " +
+                "JOIN o.orderItems oi " +
+                "WHERE o.orderStatus = :status " +
+                "GROUP BY oi.product " +
+                "ORDER BY SUM(oi.quantity * oi.purchasedPrice) DESC";
+
+        return em.createQuery(hql, Product.class)
+                .setParameter("status", OrderStatus.Completed)
+                .setMaxResults(limit)
+                .getResultList();
     }
 }

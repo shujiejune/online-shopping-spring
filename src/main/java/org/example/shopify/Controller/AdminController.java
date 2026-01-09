@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -63,17 +64,39 @@ public class AdminController {
     public ResponseEntity<AdminSummaryDTO> getDashboardStats() {
         int sold = adminService.getTotalSoldItems();
         double profit = adminService.getTotalProfit();
-        List<Product> topProducts = adminService.getTopProducts(3);
+        List<Product> mostPopularProducts = adminService.getMostPopularProducts(3);
+        List<Product> mostProfitableProducts = adminService.getMostProfitableProducts(3);
 
-        List<ProductResponseDTO> topProductDTOs = new ArrayList<>();
-        for (Product p : topProducts) {
+        List<ProductResponseDTO> mostPopularProductDTOs = mapToProductDTOs(mostPopularProducts);
+        List<ProductResponseDTO> mostProfitableProductDTOs = mapToProductDTOs(mostProfitableProducts);
+
+        return ResponseEntity.ok(new AdminSummaryDTO(sold, profit, mostPopularProductDTOs, mostProfitableProductDTOs));
+    }
+
+    @GetMapping("/products/popular")
+    public ResponseEntity<List<ProductResponseDTO>> getMostPopularProducts(
+            @RequestParam(defaultValue = "3") int limit) {
+
+        List<Product> products = adminService.getMostPopularProducts(limit);
+        return ResponseEntity.ok(mapToProductDTOs(products));
+    }
+
+    @GetMapping("/products/profitable")
+    public ResponseEntity<List<ProductResponseDTO>> getMostProfitableProducts(
+            @RequestParam(defaultValue = "3") int limit) {
+
+        List<Product> products = adminService.getMostProfitableProducts(limit);
+        return ResponseEntity.ok(mapToProductDTOs(products));
+    }
+
+    private List<ProductResponseDTO> mapToProductDTOs(List<Product> products) {
+        return products.stream().map(p -> {
             ProductResponseDTO dto = new ProductResponseDTO();
             dto.setId(p.getId());
             dto.setName(p.getName());
-            dto.setRetailPrice(p.getRetailPrice()); // Hide wholesale/quantity
-            topProductDTOs.add(dto);
-        }
-
-        return ResponseEntity.ok(new AdminSummaryDTO(sold, profit, topProductDTOs));
+            dto.setDescription(p.getDescription());
+            dto.setRetailPrice(p.getRetailPrice());
+            return dto;
+        }).collect(Collectors.toList());
     }
 }

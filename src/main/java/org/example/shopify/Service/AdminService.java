@@ -122,27 +122,13 @@ public class AdminService {
         return totalProfit;
     }
 
-    public List<Product> getTopProducts(int limit) {
-        List<Order> allOrders = orderDAO.getAllOrders();
-        Map<Product, Integer> counts = new HashMap<>();
+    @Transactional(readOnly = true)
+    public List<Product> getMostPopularProducts(int limit) {
+        return orderDAO.getMostPopularProducts(limit);
+    }
 
-        for (Order order : allOrders) {
-            if (order.getOrderStatus() == OrderStatus.Completed) {
-                for (OrderItem item : order.getOrderItems()) {
-                    Product p = item.getProduct();
-                    counts.put(p, counts.getOrDefault(p, 0) + item.getQuantity());
-                }
-            }
-        }
-
-        List<Map.Entry<Product, Integer>> list = new ArrayList<>(counts.entrySet());
-        list.sort((a, b) -> b.getValue().compareTo(a.getValue()));
-
-        List<Product> topProducts = new ArrayList<>();
-        for (int i = 0; i < Math.min(limit, list.size()); i++) {
-            topProducts.add(list.get(i).getKey());
-        }
-
-        return topProducts;
+    @Transactional(readOnly = true)
+    public List<Product> getMostProfitableProducts(int limit) {
+        return orderDAO.getMostProfitableProducts(limit);
     }
 }
