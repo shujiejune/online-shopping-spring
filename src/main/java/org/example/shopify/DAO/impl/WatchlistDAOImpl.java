@@ -2,33 +2,40 @@ package org.example.shopify.DAO.impl;
 
 import org.example.shopify.DAO.WatchlistDAO;
 import org.example.shopify.Domain.Watchlist;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Repository;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.*;
 import java.util.List;
 
 @Repository
 public class WatchlistDAOImpl implements WatchlistDAO {
-    @PersistenceContext
-    private EntityManager em;
+    private final SessionFactory sessionFactory;
+
+    public WatchlistDAOImpl(SessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
+    }
+
+    private Session getSession() {
+        return sessionFactory.getCurrentSession();
+    };
 
     @Override
     public void add(Watchlist item) {
-        em.persist(item);
+        getSession().persist(item);
     }
 
     @Override
     public void remove(Long userId, Long productId) {
-        em.createQuery("DELETE FROM Watchlist w WHERE w.user.id=:userId AND w.product.id=:productId")
+        getSession().createQuery("DELETE FROM Watchlist w WHERE w.user.id=:userId AND w.product.id=:productId")
                 .setParameter("userId", userId).setParameter("productId", productId)
                 .executeUpdate();
     }
 
     @Override
     public List<Watchlist> getInStockWatchlist(Long userId) {
-        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaBuilder cb = getSession().getCriteriaBuilder();
         CriteriaQuery<Watchlist> cq = cb.createQuery(Watchlist.class);
         Root<Watchlist> watchlist = cq.from(Watchlist.class);
 
@@ -38,6 +45,6 @@ public class WatchlistDAOImpl implements WatchlistDAO {
 
         cq.where(cb.and(userPredicate, stockPredicate));
 
-        return em.createQuery(cq).getResultList();
+        return getSession().createQuery(cq).getResultList();
     }
 }
