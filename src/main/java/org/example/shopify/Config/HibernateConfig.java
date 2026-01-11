@@ -22,6 +22,7 @@ public class HibernateConfig {
         //hibernateProperties.put("hibernate.dialect", "org.hibernate.dialect.MySQL8Dialect");
         hibernateProperties.put("hibernate.show_sql", "true");
         hibernateProperties.put("hibernate.format_sql", "true");
+        hibernateProperties.put("hibernate.hbm2ddl.auto", "update");
 
         sessionFactory.setHibernateProperties(hibernateProperties);
 
