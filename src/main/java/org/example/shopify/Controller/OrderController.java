@@ -3,9 +3,7 @@ package org.example.shopify.Controller;
 import org.example.shopify.DAO.UserDAO;
 import org.example.shopify.DTO.OrderItemDTO;
 import org.example.shopify.DTO.OrderResponseDTO;
-import org.example.shopify.DTO.ProductResponseDTO;
 import org.example.shopify.Domain.Order;
-import org.example.shopify.Domain.Product;
 import org.example.shopify.Domain.User;
 import org.example.shopify.Exception.PermissionDeniedException;
 import org.example.shopify.Exception.ResourceNotFoundException;
@@ -15,7 +13,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -37,7 +34,6 @@ public class OrderController {
         String currentUsername = authentication.getName();
 
         // Check if the user has ROLE_ADMIN
-        // (This assumes your JwtFilter adds "ROLE_ADMIN" to authorities)
         boolean isAdmin = authentication.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         System.out.println("Current user: " + currentUsername);

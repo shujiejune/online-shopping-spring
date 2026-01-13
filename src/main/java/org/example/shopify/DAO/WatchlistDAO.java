@@ -8,4 +8,5 @@ public interface WatchlistDAO {
     List<Watchlist> getInStockWatchlist(Long userId);
     void add(Watchlist item);
     void remove(Long userId, Long productId);
+    boolean exists(Long userId, Long productId);
 }

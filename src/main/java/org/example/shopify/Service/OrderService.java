@@ -71,7 +71,7 @@ public class OrderService {
         Order order = orderDAO.getOrderById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
 
         if (order.getOrderStatus() == OrderStatus.Cancelled) {
-            return;
+            throw new IllegalOrderStateException("This order is already cancelled.");
         }
         if (order.getOrderStatus() == OrderStatus.Completed) {
             throw new IllegalOrderStateException("Cannot cancel completed order.");

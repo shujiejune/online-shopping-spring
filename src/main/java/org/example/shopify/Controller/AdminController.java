@@ -10,7 +10,6 @@ import org.example.shopify.Service.OrderService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,7 +33,7 @@ public class AdminController {
 
     @PutMapping("/orders/{id}/cancel")
     public ResponseEntity<String> cancelOrder(@PathVariable Long id) {
-        adminService.cancelOrder(id);
+        orderService.cancelOrder(id);
         return ResponseEntity.ok("Order has been cancelled and inventory restocked.");
     }
 

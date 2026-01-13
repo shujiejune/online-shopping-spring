@@ -12,12 +12,14 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleInventoryException(NotEnoughInventoryException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
-    
+
+    // 401 Unauthorized
     @ExceptionHandler(InvalidCredentialsException.class)
     public ResponseEntity<String> handleLoginException(InvalidCredentialsException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
     }
 
+    // 400 Bad Request
     @ExceptionHandler(IllegalOrderStateException.class)
     public ResponseEntity<String> handleOrderState(IllegalOrderStateException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());

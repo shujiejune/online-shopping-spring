@@ -31,6 +31,14 @@ public class WatchlistService {
         Product product = productDAO.getProductById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
+        if (product.getQuantity() <= 0) {
+            throw new IllegalStateException("Cannot add out-of-stock product to watchlist.");
+        }
+
+        if (watchlistDAO.exists(userId, productId)) {
+            throw new IllegalStateException("This product is already added into watchlist.");
+        }
+
         Watchlist item = new Watchlist();
         item.setUser(user);
         item.setProduct(product);

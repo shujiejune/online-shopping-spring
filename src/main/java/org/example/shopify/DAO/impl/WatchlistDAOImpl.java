@@ -34,6 +34,17 @@ public class WatchlistDAOImpl implements WatchlistDAO {
     }
 
     @Override
+    public boolean exists(Long userId, Long productId) {
+        Long count = getSession().createQuery("SELECT count(w) FROM Watchlist w "
+                + "WHERE w.user.id = :userId AND w.product.id = :productId", Long.class)
+                .setParameter("userId", userId)
+                .setParameter("productId", productId)
+                .uniqueResult();
+
+        return count != null && count > 0;
+    }
+
+    @Override
     public List<Watchlist> getInStockWatchlist(Long userId) {
         CriteriaBuilder cb = getSession().getCriteriaBuilder();
         CriteriaQuery<Watchlist> cq = cb.createQuery(Watchlist.class);

@@ -8,6 +8,7 @@ import org.example.shopify.Domain.Order;
 import org.example.shopify.Domain.OrderItem;
 import org.example.shopify.Domain.OrderStatus;
 import org.example.shopify.Domain.Product;
+import org.example.shopify.Exception.IllegalOrderStateException;
 import org.example.shopify.Exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,28 +26,6 @@ public class AdminService {
     public AdminService(OrderDAO orderDAO,  ProductDAO productDAO) {
         this.orderDAO = orderDAO;
         this.productDAO = productDAO;
-    }
-
-    @Transactional
-    public void cancelOrder(Long orderId) {
-        Order order = orderDAO.getOrderById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
-
-        if (order.getOrderStatus() == OrderStatus.Cancelled) {
-            return;
-        }
-
-        for (OrderItem item : order.getOrderItems()) {
-            Product product = item.getProduct();
-
-            int rolledbackQuantity = product.getQuantity() + item.getQuantity();
-            product.setQuantity(rolledbackQuantity);
-
-            productDAO.saveOrUpdateProduct(product);
-        }
-
-        order.setOrderStatus(OrderStatus.Cancelled);
-        orderDAO.saveOrder(order);
     }
 
     public OrderPageResponseDTO getPaginatedOrderDashboard(int page) {
