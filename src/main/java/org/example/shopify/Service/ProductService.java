@@ -6,6 +6,7 @@ import org.example.shopify.DTO.ProductPageResponseDTO;
 import org.example.shopify.DTO.ProductResponseDTO;
 import org.example.shopify.Domain.Order;
 import org.example.shopify.Domain.OrderItem;
+import org.example.shopify.Domain.OrderStatus;
 import org.example.shopify.Domain.Product;
 import org.example.shopify.Exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
@@ -58,6 +59,7 @@ public class ProductService {
         List<Order> orders = orderDAO.getOrdersByUserId(userId);
 
         return orders.stream()
+                .filter(order -> order.getOrderStatus() == OrderStatus.Completed)
                 // Sort by Date Placed (Newest first)
                 .sorted((o1, o2) -> o2.getDatePlaced().compareTo(o1.getDatePlaced()))
                 // Flatten: Stream<Order> -> Stream<OrderItem>
@@ -77,6 +79,7 @@ public class ProductService {
 
         // Map: Product -> Total Quantity Purchased
         Map<Product, Integer> productFrequencyMap = orders.stream()
+                .filter(order -> order.getOrderStatus() == OrderStatus.Completed)
                 .flatMap(order -> order.getOrderItems().stream())
                 .collect(Collectors.groupingBy(
                         OrderItem::getProduct,
