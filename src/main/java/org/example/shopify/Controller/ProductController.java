@@ -2,6 +2,7 @@ package org.example.shopify.Controller;
 
 import org.example.shopify.DAO.ProductDAO;
 import org.example.shopify.DAO.UserDAO;
+import org.example.shopify.DTO.ProductPageResponseDTO;
 import org.example.shopify.DTO.ProductResponseDTO;
 import org.example.shopify.Domain.Product;
 import org.example.shopify.Domain.User;
@@ -27,8 +28,8 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProductResponseDTO> getProductDetail(@PathVariable Long id) {
-        Product product = productService.getProductDetail(id);
+    public ResponseEntity<ProductResponseDTO> getProductDetailForUser(@PathVariable Long id) {
+        Product product = productService.getProductDetailForUser(id);
 
         ProductResponseDTO dto = mapToDTO(product);
 
@@ -36,16 +37,8 @@ public class ProductController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<ProductResponseDTO>> getInStockProducts() {
-        List<Product> products = productService.getInStockProducts();
-
-        List<ProductResponseDTO> dtos = new ArrayList<>();
-        for (Product product : products) {
-            ProductResponseDTO dto = mapToDTO(product);
-            dtos.add(dto);
-        }
-
-        return ResponseEntity.ok(dtos);
+    public ResponseEntity<ProductPageResponseDTO> getInStockProducts(@RequestParam(defaultValue = "1") int page) {
+        return ResponseEntity.ok(productService.getPaginatedInStockProducts(page));
     }
 
     @GetMapping("/recent")

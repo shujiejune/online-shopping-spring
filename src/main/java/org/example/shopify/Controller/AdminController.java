@@ -1,13 +1,9 @@
 package org.example.shopify.Controller;
 
-import org.example.shopify.DTO.AdminSummaryDTO;
-import org.example.shopify.DTO.OrderPageResponseDTO;
-import org.example.shopify.DTO.ProductPageResponseDTO;
-import org.example.shopify.DTO.ProductResponseDTO;
+import org.example.shopify.DTO.*;
 import org.example.shopify.Domain.Product;
 import org.example.shopify.Service.AdminService;
 import org.example.shopify.Service.OrderService;
-import org.example.shopify.Service.ProductService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -21,12 +17,10 @@ import java.util.stream.Collectors;
 public class AdminController {
     private final AdminService adminService;
     private final OrderService orderService;
-    private final ProductService productService;
 
-    public AdminController(AdminService adminService, OrderService orderService,  ProductService productService) {
+    public AdminController(AdminService adminService, OrderService orderService) {
         this.adminService = adminService;
         this.orderService = orderService;
-        this.productService = productService;
     }
 
     @GetMapping("/orders")
@@ -46,8 +40,14 @@ public class AdminController {
     }
 
     @GetMapping("/products")
-    public ResponseEntity<ProductPageResponseDTO> getAllProducts(@RequestParam(defaultValue = "1") int page) {
+    public ResponseEntity<AdminProductPageResponseDTO> getAllProducts(@RequestParam(defaultValue = "1") int page) {
         return ResponseEntity.ok(adminService.getPaginatedProductDashboard(page));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<AdminProductResponseDTO> getProductDetail(@PathVariable Long id) {
+        AdminProductResponseDTO dto = adminService.getProductDetailForAdmin(id);
+        return ResponseEntity.ok(dto);
     }
 
     @PostMapping("/products")
@@ -62,42 +62,41 @@ public class AdminController {
         return ResponseEntity.ok("Product updated successfully");
     }
 
-    @GetMapping("/dashboard")
-    public ResponseEntity<AdminSummaryDTO> getDashboardStats() {
-        int sold = adminService.getTotalSoldItems();
-        double profit = adminService.getTotalProfit();
-        List<Product> mostPopularProducts = adminService.getMostPopularProducts(3);
-        List<Product> mostProfitableProducts = adminService.getMostProfitableProducts(3);
+    @GetMapping("/stats/sold-count")
+    public ResponseEntity<Integer> getSoldCount() {
+        return ResponseEntity.ok(adminService.getTotalSoldItems());
+    }
 
-        List<ProductResponseDTO> mostPopularProductDTOs = mapToProductDTOs(mostPopularProducts);
-        List<ProductResponseDTO> mostProfitableProductDTOs = mapToProductDTOs(mostProfitableProducts);
-
-        return ResponseEntity.ok(new AdminSummaryDTO(sold, profit, mostPopularProductDTOs, mostProfitableProductDTOs));
+    @GetMapping("/stats/profit")
+    public ResponseEntity<Double> getTotalProfit() {
+        return ResponseEntity.ok(adminService.getTotalProfit());
     }
 
     @GetMapping("/products/popular")
-    public ResponseEntity<List<ProductResponseDTO>> getMostPopularProducts(
+    public ResponseEntity<List<AdminProductResponseDTO>> getMostPopularProducts(
             @RequestParam(defaultValue = "3") int limit) {
 
         List<Product> products = adminService.getMostPopularProducts(limit);
-        return ResponseEntity.ok(mapToProductDTOs(products));
+        return ResponseEntity.ok(mapToAdminProductDTOs(products));
     }
 
     @GetMapping("/products/profitable")
-    public ResponseEntity<List<ProductResponseDTO>> getMostProfitableProducts(
+    public ResponseEntity<List<AdminProductResponseDTO>> getMostProfitableProducts(
             @RequestParam(defaultValue = "3") int limit) {
 
         List<Product> products = adminService.getMostProfitableProducts(limit);
-        return ResponseEntity.ok(mapToProductDTOs(products));
+        return ResponseEntity.ok(mapToAdminProductDTOs(products));
     }
 
-    private List<ProductResponseDTO> mapToProductDTOs(List<Product> products) {
+    private List<AdminProductResponseDTO> mapToAdminProductDTOs(List<Product> products) {
         return products.stream().map(p -> {
-            ProductResponseDTO dto = new ProductResponseDTO();
+            AdminProductResponseDTO dto = new AdminProductResponseDTO();
             dto.setId(p.getId());
             dto.setName(p.getName());
             dto.setDescription(p.getDescription());
             dto.setRetailPrice(p.getRetailPrice());
+            dto.setWholesalePrice(p.getWholesalePrice());
+            dto.setQuantity(p.getQuantity());
             return dto;
         }).collect(Collectors.toList());
     }

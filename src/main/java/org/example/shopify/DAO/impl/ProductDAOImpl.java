@@ -4,6 +4,7 @@ import org.example.shopify.DAO.ProductDAO;
 import org.example.shopify.Domain.Product;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.query.Query;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.criteria.*;
@@ -28,14 +29,19 @@ public class ProductDAOImpl implements ProductDAO {
     }
 
     @Override
-    public List<Product> getInStockProducts() {
+    public List<Product> getPaginatedInStockProducts(int page, int size) {
         CriteriaBuilder cb = getSession().getCriteriaBuilder();
         CriteriaQuery<Product> cq = cb.createQuery(Product.class);
         Root<Product> product = cq.from(Product.class);
 
         cq.select(product).where(cb.gt(product.get("quantity"), 0));
 
-        return getSession().createQuery(cq).getResultList();
+        Query<Product> query = getSession().createQuery(cq);
+
+        query.setFirstResult((page - 1) * size);
+        query.setMaxResults(size);
+
+        return query.getResultList();
     }
 
     @Override
@@ -52,6 +58,17 @@ public class ProductDAOImpl implements ProductDAO {
         return sessionFactory.getCurrentSession()
                 .createQuery("SELECT count(p) FROM Product p", Long.class)
                 .uniqueResult();
+    }
+
+    @Override
+    public long getInStockProductsCount() {
+        CriteriaBuilder cb = getSession().getCriteriaBuilder();
+        CriteriaQuery<Long> cq = cb.createQuery(Long.class);
+        Root<Product> product = cq.from(Product.class);
+
+        cq.select(cb.count(product)).where(cb.gt(product.get("quantity"), 0));
+
+        return getSession().createQuery(cq).getSingleResult();
     }
 
     @Override

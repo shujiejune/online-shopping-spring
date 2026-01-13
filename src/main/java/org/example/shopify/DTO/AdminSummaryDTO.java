@@ -10,6 +10,6 @@ import java.util.List;
 public class AdminSummaryDTO {
     private int totalItemsSold;
     private double totalProfit;
-    private List<ProductResponseDTO> mostPopularProducts;
-    private List<ProductResponseDTO> mostProfitableProducts;
+    private List<AdminProductResponseDTO> mostPopularProducts;
+    private List<AdminProductResponseDTO> mostProfitableProducts;
 }

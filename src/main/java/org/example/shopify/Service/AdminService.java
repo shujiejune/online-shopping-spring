@@ -2,9 +2,10 @@ package org.example.shopify.Service;
 
 import org.example.shopify.DAO.OrderDAO;
 import org.example.shopify.DAO.ProductDAO;
+import org.example.shopify.DTO.AdminProductPageResponseDTO;
+import org.example.shopify.DTO.AdminProductResponseDTO;
 import org.example.shopify.DTO.OrderPageResponseDTO;
 import org.example.shopify.DTO.OrderResponseDTO;
-import org.example.shopify.DTO.ProductPageResponseDTO;
 import org.example.shopify.Domain.Order;
 import org.example.shopify.Domain.OrderItem;
 import org.example.shopify.Domain.OrderStatus;
@@ -52,25 +53,25 @@ public class AdminService {
     }
 
     @Transactional(readOnly = true)
-    public ProductPageResponseDTO getPaginatedProductDashboard(int page) {
+    public AdminProductPageResponseDTO getPaginatedProductDashboard(int page) {
         int pageSize = 10;
 
         List<Product> products = productDAO.getPaginatedProducts(page, pageSize);
         long totalProducts = productDAO.getTotalProductsCount();
         int totalPages = (int) Math.ceil((double) totalProducts / pageSize);
 
-        List<ProductPageResponseDTO.AdminProductView> views = new ArrayList<>();
+        List<AdminProductResponseDTO> views = new ArrayList<>();
         for (Product p : products) {
-            ProductPageResponseDTO.AdminProductView view = new ProductPageResponseDTO.AdminProductView();
+            AdminProductResponseDTO view = new AdminProductResponseDTO();
             view.setId(p.getId());
             view.setName(p.getName());
-            view.setWholesalePrice(p.getWholesalePrice());
             view.setRetailPrice(p.getRetailPrice());
+            view.setWholesalePrice(p.getWholesalePrice());
             view.setQuantity(p.getQuantity());
             views.add(view);
         }
 
-        return new ProductPageResponseDTO(views, page, totalPages, totalProducts);
+        return new AdminProductPageResponseDTO(views, page, totalPages, totalProducts);
     }
 
     @Transactional
@@ -90,6 +91,17 @@ public class AdminService {
         existing.setQuantity(updatedData.getQuantity());
 
         productDAO.saveOrUpdateProduct(existing);
+    }
+
+    @Transactional(readOnly = true)
+    public AdminProductResponseDTO getProductDetailForAdmin(Long productId) {
+        Product p = productDAO.getProductById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+        return new AdminProductResponseDTO(
+                p.getId(), p.getName(), p.getDescription(),
+                p.getRetailPrice(), p.getWholesalePrice(), p.getQuantity()
+        );
     }
 
     @Transactional(readOnly = true)

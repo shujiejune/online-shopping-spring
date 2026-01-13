@@ -7,8 +7,9 @@ import java.util.Optional;
 
 public interface ProductDAO {
     Optional<Product> getProductById(Long id);
-    List<Product> getInStockProducts();
+    List<Product> getPaginatedInStockProducts(int page, int size);
     List<Product> getPaginatedProducts(int page, int size);
     long getTotalProductsCount();
+    long getInStockProductsCount();
     void saveOrUpdateProduct(Product product);
 }

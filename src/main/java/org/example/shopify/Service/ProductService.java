@@ -2,6 +2,8 @@ package org.example.shopify.Service;
 
 import org.example.shopify.DAO.OrderDAO;
 import org.example.shopify.DAO.ProductDAO;
+import org.example.shopify.DTO.ProductPageResponseDTO;
+import org.example.shopify.DTO.ProductResponseDTO;
 import org.example.shopify.Domain.Order;
 import org.example.shopify.Domain.OrderItem;
 import org.example.shopify.Domain.Product;
@@ -10,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -25,14 +28,29 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public Product getProductDetail(Long productId) {
+    public Product getProductDetailForUser(Long productId) {
         return productDAO.getProductById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with ID: " + productId));
     }
 
     @Transactional(readOnly = true)
-    public List<Product> getInStockProducts() {
-        return productDAO.getInStockProducts();
+    public ProductPageResponseDTO getPaginatedInStockProducts(int page) {
+        int pageSize = 10;
+
+        List<Product> products = productDAO.getPaginatedInStockProducts(page, pageSize);
+        long totalProducts = productDAO.getInStockProductsCount();
+        int totalPages = (int) Math.ceil((double) totalProducts / pageSize);
+
+        List<ProductResponseDTO> dtos = new ArrayList<>();
+        for (Product p : products) {
+            ProductResponseDTO dto = new ProductResponseDTO();
+            dto.setId(p.getId());
+            dto.setName(p.getName());
+            dto.setRetailPrice(p.getRetailPrice());
+            dtos.add(dto);
+        }
+
+        return new ProductPageResponseDTO(dtos, page, totalPages, totalProducts);
     }
 
     @Transactional(readOnly = true)
