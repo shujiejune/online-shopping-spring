@@ -7,8 +7,8 @@ import org.example.shopify.Exception.IllegalOrderStateException;
 import org.example.shopify.Exception.NotEnoughInventoryException;
 import org.example.shopify.Exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,11 +24,13 @@ public class OrderService {
         this.productDAO = productDAO;
     }
 
+    @Transactional(readOnly = true)
     public Order getOrderDetails(Long orderId) {
         return orderDAO.getOrderById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
     }
 
+    @Transactional(readOnly = true)
     public List<Order> getOrdersByUserId(Long userId) {
         return orderDAO.getOrdersByUserId(userId);
     }

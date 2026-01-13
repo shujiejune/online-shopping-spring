@@ -30,7 +30,9 @@ public class SecurityConfig {
         http
                 .csrf().disable()
                 .authorizeRequests()
+                .antMatchers("/api/admin/**").hasRole("ADMIN")
                 .antMatchers("/api/register", "/api/login").permitAll()
+                .antMatchers("/api/**").hasAnyRole("USER", "ADMIN")
                 .anyRequest().authenticated()
                 .and()
                 .sessionManagement()

@@ -28,11 +28,6 @@ public class ProductDAOImpl implements ProductDAO {
     }
 
     @Override
-    public List<Product> getAllProducts() {
-        return getSession().createQuery("FROM Product", Product.class).getResultList();
-    }
-
-    @Override
     public List<Product> getInStockProducts() {
         CriteriaBuilder cb = getSession().getCriteriaBuilder();
         CriteriaQuery<Product> cq = cb.createQuery(Product.class);
@@ -41,6 +36,22 @@ public class ProductDAOImpl implements ProductDAO {
         cq.select(product).where(cb.gt(product.get("quantity"), 0));
 
         return getSession().createQuery(cq).getResultList();
+    }
+
+    @Override
+    public List<Product> getPaginatedProducts(int page, int size) {
+        return sessionFactory.getCurrentSession()
+                .createQuery("FROM Product", Product.class)
+                .setFirstResult((page - 1) * size)
+                .setMaxResults(size)
+                .getResultList();
+    }
+
+    @Override
+    public long getTotalProductsCount() {
+        return sessionFactory.getCurrentSession()
+                .createQuery("SELECT count(p) FROM Product p", Long.class)
+                .uniqueResult();
     }
 
     @Override

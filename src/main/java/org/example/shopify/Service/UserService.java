@@ -39,6 +39,7 @@ public class UserService {
         userDAO.saveUser(user);
     }
 
+    @Transactional
     public User login(String username, String password) {
         Optional<User> userOptional = userDAO.getUserByUsername(username);
         if (!userOptional.isPresent()) {

@@ -1,13 +1,15 @@
 package org.example.shopify.Controller;
 
-import org.example.shopify.DAO.ProductDAO;
 import org.example.shopify.DTO.AdminSummaryDTO;
 import org.example.shopify.DTO.OrderPageResponseDTO;
+import org.example.shopify.DTO.ProductPageResponseDTO;
 import org.example.shopify.DTO.ProductResponseDTO;
 import org.example.shopify.Domain.Product;
 import org.example.shopify.Service.AdminService;
 import org.example.shopify.Service.OrderService;
+import org.example.shopify.Service.ProductService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,19 +17,20 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/admin")
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
     private final AdminService adminService;
     private final OrderService orderService;
-    private final ProductDAO productDAO;
+    private final ProductService productService;
 
-    public AdminController(AdminService adminService, OrderService orderService,  ProductDAO productDAO) {
+    public AdminController(AdminService adminService, OrderService orderService,  ProductService productService) {
         this.adminService = adminService;
         this.orderService = orderService;
-        this.productDAO = productDAO;
+        this.productService = productService;
     }
 
     @GetMapping("/orders")
-    public ResponseEntity<OrderPageResponseDTO> getOrders(@RequestParam(defaultValue = "1") int page) {
+    public ResponseEntity<OrderPageResponseDTO> getAllOrders(@RequestParam(defaultValue = "1") int page) {
         return ResponseEntity.ok(adminService.getPaginatedOrderDashboard(page));
     }
 
@@ -43,8 +46,8 @@ public class AdminController {
     }
 
     @GetMapping("/products")
-    public ResponseEntity<List<Product>> getAllProducts() {
-        return ResponseEntity.ok(productDAO.getAllProducts());
+    public ResponseEntity<ProductPageResponseDTO> getAllProducts(@RequestParam(defaultValue = "1") int page) {
+        return ResponseEntity.ok(adminService.getPaginatedProductDashboard(page));
     }
 
     @PostMapping("/products")

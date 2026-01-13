@@ -2,12 +2,13 @@ package org.example.shopify.Service;
 
 import org.example.shopify.DAO.OrderDAO;
 import org.example.shopify.DAO.ProductDAO;
-import org.example.shopify.DAO.UserDAO;
 import org.example.shopify.Domain.Order;
 import org.example.shopify.Domain.OrderItem;
 import org.example.shopify.Domain.Product;
 import org.example.shopify.Exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 
 import java.util.List;
 import java.util.Map;
@@ -23,15 +24,18 @@ public class ProductService {
         this.orderDAO = orderDAO;
     }
 
+    @Transactional(readOnly = true)
     public Product getProductDetail(Long productId) {
         return productDAO.getProductById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with ID: " + productId));
     }
 
+    @Transactional(readOnly = true)
     public List<Product> getInStockProducts() {
         return productDAO.getInStockProducts();
     }
 
+    @Transactional(readOnly = true)
     public List<Product> getMostRecentlyPurchased(Long userId, int limit) {
         List<Order> orders = orderDAO.getOrdersByUserId(userId);
 
@@ -49,6 +53,7 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<Product> getMostFrequentlyPurchased(Long userId, int limit) {
         List<Order> orders = orderDAO.getOrdersByUserId(userId);
 

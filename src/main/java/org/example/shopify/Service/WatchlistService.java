@@ -51,6 +51,7 @@ public class WatchlistService {
         watchlistDAO.remove(userId, productId);
     }
 
+    @Transactional(readOnly = true)
     public List<Watchlist> getInStockWatchlist(Long userId) {
         return watchlistDAO.getInStockWatchlist(userId);
     }

@@ -4,19 +4,17 @@ import org.example.shopify.DAO.OrderDAO;
 import org.example.shopify.DAO.ProductDAO;
 import org.example.shopify.DTO.OrderPageResponseDTO;
 import org.example.shopify.DTO.OrderResponseDTO;
+import org.example.shopify.DTO.ProductPageResponseDTO;
 import org.example.shopify.Domain.Order;
 import org.example.shopify.Domain.OrderItem;
 import org.example.shopify.Domain.OrderStatus;
 import org.example.shopify.Domain.Product;
-import org.example.shopify.Exception.IllegalOrderStateException;
 import org.example.shopify.Exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class AdminService {
@@ -28,6 +26,7 @@ public class AdminService {
         this.productDAO = productDAO;
     }
 
+    @Transactional(readOnly = true)
     public OrderPageResponseDTO getPaginatedOrderDashboard(int page) {
         int pageSize = 5;
 
@@ -52,6 +51,28 @@ public class AdminService {
         return new OrderPageResponseDTO(dtos, page, totalPages, totalOrders);
     }
 
+    @Transactional(readOnly = true)
+    public ProductPageResponseDTO getPaginatedProductDashboard(int page) {
+        int pageSize = 10;
+
+        List<Product> products = productDAO.getPaginatedProducts(page, pageSize);
+        long totalProducts = productDAO.getTotalProductsCount();
+        int totalPages = (int) Math.ceil((double) totalProducts / pageSize);
+
+        List<ProductPageResponseDTO.AdminProductView> views = new ArrayList<>();
+        for (Product p : products) {
+            ProductPageResponseDTO.AdminProductView view = new ProductPageResponseDTO.AdminProductView();
+            view.setId(p.getId());
+            view.setName(p.getName());
+            view.setWholesalePrice(p.getWholesalePrice());
+            view.setRetailPrice(p.getRetailPrice());
+            view.setQuantity(p.getQuantity());
+            views.add(view);
+        }
+
+        return new ProductPageResponseDTO(views, page, totalPages, totalProducts);
+    }
+
     @Transactional
     public void addProduct(Product product) {
         productDAO.saveOrUpdateProduct(product);
@@ -71,6 +92,7 @@ public class AdminService {
         productDAO.saveOrUpdateProduct(existing);
     }
 
+    @Transactional(readOnly = true)
     public int getTotalSoldItems() {
         List<Order> orders = orderDAO.getAllOrders();
         int totalSum = 0;
@@ -86,6 +108,7 @@ public class AdminService {
         return totalSum;
     }
 
+    @Transactional(readOnly = true)
     public double getTotalProfit() {
         List<Order> orders = orderDAO.getAllOrders();
         double totalProfit = 0;

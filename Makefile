@@ -18,6 +18,6 @@ run:
 # Single command to spin up DB and then run the app
 up:
 	$(MAKE) db-up
-	@echo "Waiting 20 seconds for MySQL to initialize..."
-	@sleep 20
+	@echo "Waiting 10 seconds for MySQL to initialize..."
+	@sleep 10
 	$(MAKE) run
