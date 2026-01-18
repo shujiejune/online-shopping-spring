@@ -8,6 +8,7 @@ import org.example.shopify.Domain.Product;
 import org.example.shopify.Domain.User;
 import org.example.shopify.Exception.ResourceNotFoundException;
 import org.example.shopify.Service.ProductService;
+import org.example.shopify.Service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -20,11 +21,11 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/products")
 public class ProductController {
     private final ProductService productService;
-    private final UserDAO userDAO;
+    private final UserService userService;
 
-    public ProductController(ProductService productService,  UserDAO userDAO) {
+    public ProductController(ProductService productService,  UserService userService) {
         this.productService = productService;
-        this.userDAO = userDAO;
+        this.userService = userService;
     }
 
     @GetMapping("/{id}")
@@ -69,8 +70,7 @@ public class ProductController {
 
     private User getCurrentUser() {
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return userDAO.getUserByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        return userService.getUserByUsername(username);
     }
 
     private ProductResponseDTO mapToDTO(Product p) {
