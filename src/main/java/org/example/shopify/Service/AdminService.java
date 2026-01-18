@@ -43,6 +43,7 @@ public class AdminService {
             dto.setUsername(o.getUser().getUsername());
             dto.setDatePlaced(o.getDatePlaced());
             dto.setOrderStatus(o.getOrderStatus().toString());
+            dto.setTotalAmount(o.getTotalAmount());
 
             // Leave dto.setItems(null) here because the dashboard list
             // shouldn't show all products until the admin clicks a specific order.

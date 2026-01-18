@@ -1,6 +1,8 @@
 package org.example.shopify.Controller;
 
 import org.example.shopify.DTO.CartResponseDTO;
+import org.example.shopify.DTO.OrderResponseDTO;
+import org.example.shopify.Domain.Order;
 import org.example.shopify.Domain.User;
 import org.example.shopify.Service.CartService;
 import org.example.shopify.Service.UserService;
@@ -49,6 +51,23 @@ public class CartController {
     public ResponseEntity<String> clearCart() {
         cartService.clearUserCart(getCurrentUserId());
         return ResponseEntity.ok("Cart cleared");
+    }
+
+    @PostMapping("/checkout")
+    public ResponseEntity<OrderResponseDTO> checkout() {
+        Long userId = getCurrentUserId();
+
+        // 1. Service returns the "Source of Truth" (Entity)
+        CartResponseDTO cartDTO = cartService.getCart(userId);
+        Order newOrder = cartService.checkout(userId);
+
+        // 2. Controller converts it to the "View" (DTO)
+        OrderResponseDTO response = new OrderResponseDTO();
+        response.setOrderId(newOrder.getId());
+        response.setOrderStatus(newOrder.getOrderStatus().toString());
+        response.setTotalAmount(cartDTO.getTotalPrice());
+
+        return ResponseEntity.ok(response);
     }
 
     // Helper to get ID from JWT/Spring Security setup

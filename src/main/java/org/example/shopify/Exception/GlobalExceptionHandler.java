@@ -43,6 +43,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
     }
 
+    // 400 Bad Request
+    @ExceptionHandler(NotEnoughInventoryException.class)
+    public ResponseEntity<String> handleEmptyCartException(EmptyCartCheckoutException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
     // Generic fallback for any other RuntimeExceptions
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<String> handleGeneralException(RuntimeException ex) {

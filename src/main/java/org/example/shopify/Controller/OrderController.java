@@ -70,6 +70,7 @@ public class OrderController {
             dto.setUsername(order.getUser().getUsername());
             dto.setDatePlaced(order.getDatePlaced());
             dto.setOrderStatus(order.getOrderStatus().toString());
+            dto.setTotalAmount(order.getTotalAmount());
 
             List<OrderItemDTO> itemDtos = mapToItemDTOs(order);
 

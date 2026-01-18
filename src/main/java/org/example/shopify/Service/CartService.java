@@ -1,15 +1,18 @@
 package org.example.shopify.Service;
 
 import org.example.shopify.DAO.CartDAO;
+import org.example.shopify.DAO.OrderDAO;
 import org.example.shopify.DAO.ProductDAO;
 import org.example.shopify.DAO.UserDAO;
 import org.example.shopify.DTO.CartResponseDTO;
-import org.example.shopify.Domain.CartItem;
-import org.example.shopify.Domain.Product;
-import org.example.shopify.Domain.User;
+import org.example.shopify.Domain.*;
+import org.example.shopify.Exception.EmptyCartCheckoutException;
+import org.example.shopify.Exception.NotEnoughInventoryException;
+import org.example.shopify.Exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -19,11 +22,13 @@ public class CartService {
     private final CartDAO cartDAO;
     private final ProductDAO productDAO;
     private final UserDAO userDAO;
+    private final OrderDAO orderDAO;
 
-    public CartService(CartDAO cartDAO, ProductDAO productDAO, UserDAO userDAO) {
+    public CartService(CartDAO cartDAO, ProductDAO productDAO, UserDAO userDAO,  OrderDAO orderDAO) {
         this.cartDAO = cartDAO;
         this.productDAO = productDAO;
         this.userDAO = userDAO;
+        this.orderDAO = orderDAO;
     }
 
     @Transactional
@@ -106,5 +111,55 @@ public class CartService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         cartDAO.clearCart(userId);
+    }
+
+    @Transactional
+    public Order checkout(Long userId) {
+        // 1. Get all items in the user's cart
+        List<CartItem> cartItems = cartDAO.getCartByUserId(userId);
+        if (cartItems.isEmpty()) {
+            throw new EmptyCartCheckoutException("Cannot checkout an empty cart.");
+        }
+
+        // 2. Create the Order entity
+        User user = userDAO.getUserById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        Order order = new Order();
+        order.setUser(user);
+        order.setDatePlaced(LocalDateTime.now());
+        order.setOrderStatus(OrderStatus.Completed);  // or Completed after payment
+
+        List<OrderItem> orderItems = new ArrayList<>();
+
+        // 3. Convert CartItems to OrderItems and Update Stock
+        for (CartItem cartItem : cartItems) {
+            Product product = cartItem.getProduct();
+
+            // Final stock check
+            if (product.getQuantity() < cartItem.getQuantity()) {
+                throw new NotEnoughInventoryException("Product " + product.getName() + " is out of stock.");
+            }
+
+            // Reduce inventory
+            product.setQuantity(product.getQuantity() - cartItem.getQuantity());
+            productDAO.saveOrUpdateProduct(product);
+
+            // Create OrderItem
+            OrderItem orderItem = new OrderItem();
+            orderItem.setOrder(order);
+            orderItem.setProduct(product);
+            orderItem.setQuantity(cartItem.getQuantity());
+            orderItem.setPurchasedPrice(product.getRetailPrice());
+            orderItems.add(orderItem);
+        }
+
+        order.setOrderItems(orderItems);
+
+        // 4. Save the order and clear the cart
+        orderDAO.saveOrder(order);
+        cartDAO.clearCart(userId);
+
+        return order;
     }
 }

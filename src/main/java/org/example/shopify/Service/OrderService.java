@@ -46,7 +46,8 @@ public class OrderService {
         for (Map.Entry<Long, Integer> entry : items.entrySet()) {
             Long productId = entry.getKey();
             Integer quantity = entry.getValue();
-            Product product = productDAO.getProductById(productId).orElseThrow(() -> new RuntimeException("Product not found"));
+            Product product = productDAO.getProductById(productId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
             if (product.getQuantity() < quantity) {
                 throw new NotEnoughInventoryException("Not enough inventory for " + product.getName());
@@ -64,13 +65,15 @@ public class OrderService {
             orderItems.add(orderItem);
         }
         order.setOrderItems(orderItems);
+        order.setTotalAmount(calculateTotalAmount(order));
 
         orderDAO.saveOrder(order);
     }
 
     @Transactional
     public void cancelOrder(Long orderId) {
-        Order order = orderDAO.getOrderById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
+        Order order = orderDAO.getOrderById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
         if (order.getOrderStatus() == OrderStatus.Cancelled) {
             throw new IllegalOrderStateException("This order is already cancelled.");
@@ -92,7 +95,8 @@ public class OrderService {
 
     @Transactional
     public void completeOrder(Long orderId) {
-        Order order = orderDAO.getOrderById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
+        Order order = orderDAO.getOrderById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
         if (order.getOrderStatus() != OrderStatus.Processing) {
             throw new IllegalOrderStateException("Cannot complete order that is not in progress.");
@@ -100,5 +104,11 @@ public class OrderService {
 
         order.setOrderStatus(OrderStatus.Completed);
         orderDAO.saveOrder(order);
+    }
+
+    private Double calculateTotalAmount(Order order) {
+        return order.getOrderItems().stream()
+                .mapToDouble(item -> item.getPurchasedPrice() * item.getQuantity())
+                .sum();
     }
 }
