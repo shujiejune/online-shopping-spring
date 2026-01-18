@@ -1,17 +1,22 @@
 package org.example.shopify.Controller;
 
 import org.example.shopify.DTO.CartResponseDTO;
+import org.example.shopify.Domain.User;
 import org.example.shopify.Service.CartService;
+import org.example.shopify.Service.UserService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/cart")
 public class CartController {
     private final CartService cartService;
+    private final UserService userService;
 
-    public CartController(CartService cartService) {
+    public CartController(CartService cartService, UserService userService) {
         this.cartService = cartService;
+        this.userService = userService;
     }
 
     @GetMapping
@@ -48,7 +53,14 @@ public class CartController {
 
     // Helper to get ID from JWT/Spring Security setup
     private Long getCurrentUserId() {
-        // Placeholder: Replace with your actual security logic
-        return 1L;
+        // 1. Get the username from the SecurityContext
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String username = principal.toString();
+
+        // 2. Use the Service to get the User entity
+        User user = userService.getUserByUsername(username);
+
+        // 3. Return the ID
+        return user.getId();
     }
 }

@@ -3,11 +3,12 @@ package org.example.shopify.Service;
 import org.example.shopify.DAO.UserDAO;
 import org.example.shopify.Domain.User;
 import org.example.shopify.Exception.InvalidCredentialsException;
+import org.example.shopify.Exception.ResourceNotFoundException;
 import org.example.shopify.Exception.UserAlreadyExistsException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
 import java.util.Optional;
 
 @Service
@@ -18,6 +19,12 @@ public class UserService {
     public UserService(UserDAO userDAO, BCryptPasswordEncoder pwdEncoder) {
         this.userDAO = userDAO;
         this.pwdEncoder = pwdEncoder;
+    }
+
+    @Transactional(readOnly = true)
+    public User getUserByUsername(String username) {
+        return userDAO.getUserByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
     }
 
     @Transactional

@@ -1,13 +1,12 @@
 package org.example.shopify.Controller;
 
-import org.example.shopify.DAO.UserDAO;
 import org.example.shopify.DTO.OrderItemDTO;
 import org.example.shopify.DTO.OrderResponseDTO;
 import org.example.shopify.Domain.Order;
 import org.example.shopify.Domain.User;
 import org.example.shopify.Exception.PermissionDeniedException;
-import org.example.shopify.Exception.ResourceNotFoundException;
 import org.example.shopify.Service.OrderService;
+import org.example.shopify.Service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,11 +20,11 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/orders")
 public class OrderController {
     private final OrderService orderService;
-    private final UserDAO  userDAO;
+    private final UserService userService;
 
-    public OrderController(OrderService orderService, UserDAO userDAO) {
+    public OrderController(OrderService orderService, UserService userService) {
         this.orderService = orderService;
-        this.userDAO = userDAO;
+        this.userService = userService;
     }
 
     @GetMapping("/{id}")
@@ -51,13 +50,7 @@ public class OrderController {
         dto.setOrderStatus(order.getOrderStatus().toString());
         dto.setUsername(order.getUser().getUsername());
 
-        List<OrderItemDTO> itemDtos = order.getOrderItems().stream().map(item -> {
-            OrderItemDTO itemDto = new OrderItemDTO();
-            itemDto.setProductName(item.getProduct().getName());
-            itemDto.setQuantity(item.getQuantity());
-            itemDto.setPurchasedPrice(item.getPurchasedPrice());
-            return itemDto;
-        }).collect(Collectors.toList());
+        List<OrderItemDTO> itemDtos = mapToItemDTOs(order);
 
         dto.setItems(itemDtos);
 
@@ -67,8 +60,7 @@ public class OrderController {
     @GetMapping("/my-orders")
     public ResponseEntity<List<OrderResponseDTO>> getMyOrders() {
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        User currentUser = userDAO.getUserByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        User currentUser = userService.getUserByUsername(username);
 
         List<Order> orders = orderService.getOrdersByUserId(currentUser.getId());
 
@@ -79,13 +71,7 @@ public class OrderController {
             dto.setDatePlaced(order.getDatePlaced());
             dto.setOrderStatus(order.getOrderStatus().toString());
 
-            List<OrderItemDTO> itemDtos = order.getOrderItems().stream().map(item -> {
-                OrderItemDTO itemDto = new OrderItemDTO();
-                itemDto.setProductName(item.getProduct().getName());
-                itemDto.setQuantity(item.getQuantity());
-                itemDto.setPurchasedPrice(item.getPurchasedPrice());
-                return itemDto;
-            }).collect(Collectors.toList());
+            List<OrderItemDTO> itemDtos = mapToItemDTOs(order);
 
             dto.setItems(itemDtos);
 
@@ -98,8 +84,7 @@ public class OrderController {
     @PostMapping("/place")
     public ResponseEntity<String> placeOrder(@RequestBody Map<Long, Integer> items) {
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        User currentUser = userDAO.getUserByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        User currentUser = userService.getUserByUsername(username);
         orderService.createOrder(currentUser, items);
         return ResponseEntity.ok("Order placed successfully");
     }
@@ -108,5 +93,15 @@ public class OrderController {
     public ResponseEntity<String> cancelOrder(@PathVariable Long id) {
         orderService.cancelOrder(id);
         return ResponseEntity.ok("Order canceled");
+    }
+
+    private List<OrderItemDTO> mapToItemDTOs(Order order) {
+        return order.getOrderItems().stream().map(item -> {
+            OrderItemDTO itemDto = new OrderItemDTO();
+            itemDto.setProductName(item.getProduct().getName());
+            itemDto.setQuantity(item.getQuantity());
+            itemDto.setPurchasedPrice(item.getPurchasedPrice());
+            return itemDto;
+        }).collect(Collectors.toList());
     }
 }
