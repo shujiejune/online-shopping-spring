@@ -1,11 +1,10 @@
 package org.example.shopify.Controller;
 
-import org.example.shopify.DAO.UserDAO;
 import org.example.shopify.DTO.ProductResponseDTO;
 import org.example.shopify.Domain.Product;
 import org.example.shopify.Domain.User;
 import org.example.shopify.Domain.Watchlist;
-import org.example.shopify.Exception.ResourceNotFoundException;
+import org.example.shopify.Service.UserService;
 import org.example.shopify.Service.WatchlistService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,17 +17,17 @@ import java.util.List;
 @RequestMapping("/api/watchlist")
 public class WatchlistController {
     private final WatchlistService watchlistService;
-    private final UserDAO userDAO;
+    private final UserService userService;
 
-    public WatchlistController(WatchlistService watchlistService, UserDAO userDAO) {
+    public WatchlistController(WatchlistService watchlistService, UserService userService) {
         this.watchlistService = watchlistService;
-        this.userDAO = userDAO;
+        this.userService = userService;
     }
 
     @PostMapping("/add/{productId}")
     public ResponseEntity<String> addToWatchlist(@PathVariable Long productId) {
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        User user = userDAO.getUserByUsername(username).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        User user = userService.getUserByUsername(username);
         watchlistService.addToWatchlist(user.getId(), productId);
         return ResponseEntity.ok("Product added to watchlist");
     }
@@ -36,7 +35,7 @@ public class WatchlistController {
     @DeleteMapping("/remove/{productId}")
     public ResponseEntity<String> removeFromWatchlist(@PathVariable Long productId) {
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        User user = userDAO.getUserByUsername(username).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        User user = userService.getUserByUsername(username);
         watchlistService.removeFromWatchlist(user.getId(), productId);
         return ResponseEntity.ok("Product removed from watchlist");
     }
@@ -44,7 +43,7 @@ public class WatchlistController {
     @GetMapping
     public ResponseEntity<List<ProductResponseDTO>> getMyWatchlist() {
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        User user = userDAO.getUserByUsername(username).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        User user = userService.getUserByUsername(username);
 
         // 1. Get the list of Watchlist entities from the service
         List<Watchlist> watchlistEntries = watchlistService.getInStockWatchlist(user.getId());

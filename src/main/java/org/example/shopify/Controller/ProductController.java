@@ -1,19 +1,15 @@
 package org.example.shopify.Controller;
 
-import org.example.shopify.DAO.ProductDAO;
-import org.example.shopify.DAO.UserDAO;
 import org.example.shopify.DTO.ProductPageResponseDTO;
 import org.example.shopify.DTO.ProductResponseDTO;
 import org.example.shopify.Domain.Product;
 import org.example.shopify.Domain.User;
-import org.example.shopify.Exception.ResourceNotFoundException;
 import org.example.shopify.Service.ProductService;
 import org.example.shopify.Service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
