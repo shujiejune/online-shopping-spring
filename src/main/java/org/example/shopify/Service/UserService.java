@@ -1,6 +1,7 @@
 package org.example.shopify.Service;
 
 import org.example.shopify.DAO.UserDAO;
+import org.example.shopify.DTO.RegistrationRequestDTO;
 import org.example.shopify.Domain.User;
 import org.example.shopify.Exception.InvalidCredentialsException;
 import org.example.shopify.Exception.ResourceNotFoundException;
@@ -28,21 +29,23 @@ public class UserService {
     }
 
     @Transactional
-    public void register(User user) {
-        if (userDAO.getUserByUsername(user.getUsername()).isPresent()) {
+    public void register(RegistrationRequestDTO dto) {
+        // 1. Check if username or email already exists
+        if (userDAO.getUserByUsername(dto.getUsername()).isPresent()) {
             throw new UserAlreadyExistsException("Username already exists");
         }
-        if (userDAO.getUserByEmail(user.getEmail()).isPresent()) {
+        if (userDAO.getUserByEmail(dto.getEmail()).isPresent()) {
             throw new UserAlreadyExistsException("Email already exists");
         }
 
-        String encodedPwd = pwdEncoder.encode(user.getPassword());
-        user.setPassword(encodedPwd);
+        // 2. Map DTO to Entity
+        User user = new User();
+        user.setUsername(dto.getUsername());
+        user.setEmail(dto.getEmail());
+        user.setPassword(pwdEncoder.encode(dto.getPassword()));
+        user.setRole(1); // Default to Normal User
 
-        if (user.getRole() == null) {
-            user.setRole(1);
-        }
-
+        // 3. Save
         userDAO.saveUser(user);
     }
 
