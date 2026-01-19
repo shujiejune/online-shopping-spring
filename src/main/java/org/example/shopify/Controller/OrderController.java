@@ -69,7 +69,7 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/place")
+    @PostMapping()
     public ResponseEntity<String> placeOrder(@RequestBody Map<Long, Integer> items) {
         String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User currentUser = userService.getUserByUsername(username);
