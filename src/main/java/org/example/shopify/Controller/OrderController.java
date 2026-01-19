@@ -1,6 +1,7 @@
 package org.example.shopify.Controller;
 
 import org.example.shopify.DTO.OrderItemDTO;
+import org.example.shopify.DTO.OrderPageResponseDTO;
 import org.example.shopify.DTO.OrderResponseDTO;
 import org.example.shopify.Domain.Order;
 import org.example.shopify.Domain.User;
@@ -58,28 +59,14 @@ public class OrderController {
     }
 
     @GetMapping("/my-orders")
-    public ResponseEntity<List<OrderResponseDTO>> getMyOrders() {
-        String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        User currentUser = userService.getUserByUsername(username);
+    public ResponseEntity<OrderPageResponseDTO> getMyOrders(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
 
-        List<Order> orders = orderService.getOrdersByUserId(currentUser.getId());
+        Long userId = getCurrentUserId();
+        OrderPageResponseDTO response = orderService.getOrdersByUserId(userId, page);
 
-        List<OrderResponseDTO> dtos = orders.stream().map(order -> {
-            OrderResponseDTO dto = new OrderResponseDTO();
-            dto.setOrderId(order.getId());
-            dto.setUsername(order.getUser().getUsername());
-            dto.setDatePlaced(order.getDatePlaced());
-            dto.setOrderStatus(order.getOrderStatus().toString());
-            dto.setTotalAmount(order.getTotalAmount());
-
-            List<OrderItemDTO> itemDtos = mapToItemDTOs(order);
-
-            dto.setItems(itemDtos);
-
-            return dto;
-        }).collect(Collectors.toList());
-
-        return ResponseEntity.ok(dtos);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/place")
@@ -99,10 +86,24 @@ public class OrderController {
     private List<OrderItemDTO> mapToItemDTOs(Order order) {
         return order.getOrderItems().stream().map(item -> {
             OrderItemDTO itemDto = new OrderItemDTO();
+            itemDto.setOrderItemId(item.getId());
+            itemDto.setProductId(item.getProduct().getId());
             itemDto.setProductName(item.getProduct().getName());
             itemDto.setQuantity(item.getQuantity());
             itemDto.setPurchasedPrice(item.getPurchasedPrice());
             return itemDto;
         }).collect(Collectors.toList());
+    }
+
+    private Long getCurrentUserId() {
+        // 1. Get the username from the SecurityContext
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String username = principal.toString();
+
+        // 2. Use the Service to get the User entity
+        User user = userService.getUserByUsername(username);
+
+        // 3. Return the ID
+        return user.getId();
     }
 }

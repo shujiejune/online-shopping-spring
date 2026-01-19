@@ -9,7 +9,9 @@ import java.util.Optional;
 public interface OrderDAO {
     Optional<Order> getOrderById(Long orderId);
     List<Order> getOrdersByUserId(Long userId);
+    List<Order> getPaginatedOrdersByUserId(Long userId, int page, int pageSize);
     List<Order> getAllOrders();
+    long getOrdersCountByUserId(Long userId);
     long getTotalOrdersCount();
     List<Order> getPaginatedOrders(int page, int pageSize);
     void saveOrder(Order order);

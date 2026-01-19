@@ -2,6 +2,9 @@ package org.example.shopify.Service;
 
 import org.example.shopify.DAO.OrderDAO;
 import org.example.shopify.DAO.ProductDAO;
+import org.example.shopify.DTO.OrderItemDTO;
+import org.example.shopify.DTO.OrderPageResponseDTO;
+import org.example.shopify.DTO.OrderResponseDTO;
 import org.example.shopify.Domain.*;
 import org.example.shopify.Exception.IllegalOrderStateException;
 import org.example.shopify.Exception.NotEnoughInventoryException;
@@ -13,6 +16,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class OrderService {
@@ -31,8 +35,38 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public List<Order> getOrdersByUserId(Long userId) {
-        return orderDAO.getOrdersByUserId(userId);
+    public OrderPageResponseDTO getOrdersByUserId(Long userId, int page) {
+        int pageSize = 5;
+        // 1. Fetch the specific page of Order entities
+        List<Order> orders = orderDAO.getPaginatedOrdersByUserId(userId, page, pageSize);
+
+        // 2. Fetch total count for pagination math
+        long totalElements = orderDAO.getOrdersCountByUserId(userId);
+
+        // 3. Map Entities to DTOs
+        List<OrderResponseDTO> orderDtos = orders.stream()
+                .map(order -> {
+                    OrderResponseDTO dto = new OrderResponseDTO();
+                    dto.setOrderId(order.getId());
+                    dto.setOrderStatus(order.getOrderStatus().toString());
+                    dto.setDatePlaced(order.getDatePlaced());
+
+                    List<OrderItemDTO> itemDtos = order.getOrderItems().stream()
+                            .map(item -> new OrderItemDTO(
+                                    item.getId(),
+                                    item.getProduct().getId(), // The link ID
+                                    item.getProduct().getName(),
+                                    item.getQuantity(),
+                                    item.getPurchasedPrice()
+                            )).collect(Collectors.toList());
+
+                    dto.setItems(itemDtos);
+                    return dto;
+                }).collect(Collectors.toList());
+
+        // 4. Wrap in Page Response
+        int totalPages = (int) Math.ceil((double) totalElements / pageSize);
+        return new OrderPageResponseDTO(orderDtos, page, totalPages, totalElements);
     }
 
     @Transactional

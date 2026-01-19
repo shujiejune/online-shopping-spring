@@ -38,8 +38,24 @@ public class OrderDAOImpl implements OrderDAO {
     }
 
     @Override
+    public List<Order> getPaginatedOrdersByUserId(Long userId, int page, int pageSize) {
+        return getSession().createQuery(
+                "FROM Order o WHERE o.user.id = :userId ORDER BY o.datePlaced DESC", Order.class)
+                .setParameter("userId", userId)
+                .setFirstResult((page - 1) * pageSize)
+                .setMaxResults(pageSize)
+                .getResultList();
+    }
+
+    @Override
     public List<Order> getAllOrders() {
         return getSession().createQuery("FROM Order o", Order.class).getResultList();
+    }
+
+    @Override
+    public long getOrdersCountByUserId(Long userId) {
+        return getSession().createQuery("SELECT COUNT(o) FROM Order o WHERE o.user.id = :userId", Long.class)
+                .setParameter("userId", userId).getSingleResult();
     }
 
     @Override
