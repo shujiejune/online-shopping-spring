@@ -35,10 +35,10 @@ public class CartService {
     public void addToCart(Long userId, Long productId, Integer quantity) {
         // 1. Validate Product Stock
         Product product = productDAO.getProductById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         if (product.getQuantity() < quantity) {
-            throw new RuntimeException("Not enough stock available");
+            throw new NotEnoughInventoryException("Not enough stock available");
         }
 
         // 2. Check if item already exists in user's cart
@@ -47,7 +47,7 @@ public class CartService {
             cartDAO.updateQuantity(existingItem.get().getId(), existingItem.get().getQuantity() + quantity);
         } else {
             User user = userDAO.getUserById(userId)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found"));
             CartItem newItem = new CartItem();
             newItem.setUser(user);
             newItem.setProduct(product);
@@ -84,7 +84,7 @@ public class CartService {
     public void updateItemQuantity(Long itemId, Integer requestedQuantity) {
         // 1. Fetch with Optional
         CartItem item = cartDAO.getCartItemById(itemId)
-                .orElseThrow(() -> new RuntimeException("Cart item not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Cart item not found"));
 
         // 2. If quantity is updated to 0 or less, just remove it
         if (requestedQuantity <= 0) {
@@ -94,7 +94,7 @@ public class CartService {
 
         // 3. Stock check
         if (item.getProduct().getQuantity() < requestedQuantity) {
-            throw new RuntimeException("Insufficient stock");
+            throw new NotEnoughInventoryException("Insufficient stock");
         }
 
         cartDAO.updateQuantity(itemId, requestedQuantity);
@@ -108,7 +108,7 @@ public class CartService {
     @Transactional
     public void clearUserCart(Long userId) {
         userDAO.getUserById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         cartDAO.clearCart(userId);
     }
