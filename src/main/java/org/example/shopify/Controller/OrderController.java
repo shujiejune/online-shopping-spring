@@ -2,6 +2,7 @@ package org.example.shopify.Controller;
 
 import org.example.shopify.DTO.OrderItemDTO;
 import org.example.shopify.DTO.OrderPageResponseDTO;
+import org.example.shopify.DTO.OrderRequestDTO;
 import org.example.shopify.DTO.OrderResponseDTO;
 import org.example.shopify.Domain.Order;
 import org.example.shopify.Domain.User;
@@ -13,6 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -70,17 +72,36 @@ public class OrderController {
     }
 
     @PostMapping()
-    public ResponseEntity<String> placeOrder(@RequestBody Map<Long, Integer> items) {
-        String username = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        User currentUser = userService.getUserByUsername(username);
-        orderService.createOrder(currentUser, items);
-        return ResponseEntity.ok("Order placed successfully");
+    public ResponseEntity<OrderResponseDTO> placeOrder(@Valid @RequestBody OrderRequestDTO request) {
+        Long userId = getCurrentUserId();
+
+        // Service handles stock check, price locking, and saving
+        Order newOrder = orderService.createOrder(userId, request);
+
+        // Convert Entity to DTO
+        OrderResponseDTO dto = mapToOrderDTO(newOrder);
+        return ResponseEntity.ok(dto);
     }
 
     @PutMapping("/{id}/cancel")
     public ResponseEntity<String> cancelOrder(@PathVariable Long id) {
         orderService.cancelOrder(id);
         return ResponseEntity.ok("Order canceled");
+    }
+
+    private OrderResponseDTO mapToOrderDTO(Order order) {
+        OrderResponseDTO dto = new OrderResponseDTO();
+        dto.setOrderId(order.getId());
+        dto.setUsername(order.getUser().getUsername());
+        dto.setDatePlaced(order.getDatePlaced());
+        dto.setOrderStatus(order.getOrderStatus().toString());
+        dto.setTotalAmount(order.getTotalAmount());
+
+        List<OrderItemDTO> itemDtos = mapToItemDTOs(order);
+
+        dto.setItems(itemDtos);
+
+        return dto;
     }
 
     private List<OrderItemDTO> mapToItemDTOs(Order order) {

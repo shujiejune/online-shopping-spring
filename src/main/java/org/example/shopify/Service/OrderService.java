@@ -2,8 +2,10 @@ package org.example.shopify.Service;
 
 import org.example.shopify.DAO.OrderDAO;
 import org.example.shopify.DAO.ProductDAO;
+import org.example.shopify.DAO.UserDAO;
 import org.example.shopify.DTO.OrderItemDTO;
 import org.example.shopify.DTO.OrderPageResponseDTO;
+import org.example.shopify.DTO.OrderRequestDTO;
 import org.example.shopify.DTO.OrderResponseDTO;
 import org.example.shopify.Domain.*;
 import org.example.shopify.Exception.IllegalOrderStateException;
@@ -12,20 +14,20 @@ import org.example.shopify.Exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 public class OrderService {
     private final OrderDAO orderDAO;
     private final ProductDAO productDAO;
+    private final UserDAO userDAO;
 
-    public OrderService(OrderDAO orderDAO, ProductDAO productDAO) {
+    public OrderService(OrderDAO orderDAO, ProductDAO productDAO, UserDAO userDAO) {
         this.orderDAO = orderDAO;
         this.productDAO = productDAO;
+        this.userDAO = userDAO;
     }
 
     @Transactional(readOnly = true)
@@ -70,38 +72,52 @@ public class OrderService {
     }
 
     @Transactional
-    public void createOrder(User user, Map<Long, Integer> items) {
+    public Order createOrder(Long userId, OrderRequestDTO request) {
+        // 1. Fetch the User
+        User user = userDAO.getUserById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        // 2. Create the parent Order entity
         Order order = new Order();
         order.setUser(user);
-        order.setDatePlaced(LocalDateTime.now());
+        order.setDatePlaced(order.getDatePlaced());
         order.setOrderStatus(OrderStatus.Processing);
-
-        List<OrderItem> orderItems = new ArrayList<>();
-        for (Map.Entry<Long, Integer> entry : items.entrySet()) {
-            Long productId = entry.getKey();
-            Integer quantity = entry.getValue();
-            Product product = productDAO.getProductById(productId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-
-            if (product.getQuantity() < quantity) {
-                throw new NotEnoughInventoryException("Not enough inventory for " + product.getName());
-            }
-
-            product.setQuantity(product.getQuantity() - quantity);
-            productDAO.saveOrUpdateProduct(product);
-
-            OrderItem orderItem = new OrderItem();
-            orderItem.setProduct(product);
-            orderItem.setOrder(order);
-            orderItem.setQuantity(quantity);
-            orderItem.setPurchasedPrice(product.getRetailPrice());
-            orderItem.setWholesalePrice(product.getWholesalePrice());
-            orderItems.add(orderItem);
-        }
-        order.setOrderItems(orderItems);
         order.setTotalAmount(calculateTotalAmount(order));
 
+        List<OrderItem> orderItems = new ArrayList<>();
+
+        // 3. Process each item from the Request DTO
+        for (OrderItemDTO itemDto : request.getItems()) {
+            // Fetch the Product (validate existence)
+            Product product = productDAO.getProductById(itemDto.getProductId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + itemDto.getProductId()));
+
+            // Check Stock
+            if (product.getQuantity() < itemDto.getQuantity()) {
+                throw new NotEnoughInventoryException("Insufficient stock for: " + product.getName());
+            }
+
+            // Deduct Inventory
+            product.setQuantity(product.getQuantity() - itemDto.getQuantity());
+            productDAO.saveOrUpdateProduct(product);
+
+            // Create OrderItem (Mapping DTO -> Entity)
+            OrderItem orderItem = new OrderItem();
+            orderItem.setOrder(order);
+            orderItem.setProduct(product);
+            orderItem.setQuantity(itemDto.getQuantity());
+
+            // CRITICAL: Lock the current retail price as the execution price
+            orderItem.setPurchasedPrice(product.getRetailPrice());
+
+            orderItems.add(orderItem);
+        }
+
+        // 4. Link items to order and save
+        order.setOrderItems(orderItems);
         orderDAO.saveOrder(order);
+
+        return order;
     }
 
     @Transactional
