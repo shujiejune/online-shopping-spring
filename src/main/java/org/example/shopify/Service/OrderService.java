@@ -121,7 +121,7 @@ public class OrderService {
     }
 
     @Transactional
-    public void cancelOrder(Long orderId) {
+    public Order cancelOrder(Long orderId) {
         Order order = orderDAO.getOrderById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
@@ -141,10 +141,12 @@ public class OrderService {
 
         order.setOrderStatus(OrderStatus.Cancelled);
         orderDAO.saveOrder(order);
+
+        return order;
     }
 
     @Transactional
-    public void completeOrder(Long orderId) {
+    public Order completeOrder(Long orderId) {
         Order order = orderDAO.getOrderById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
@@ -154,6 +156,8 @@ public class OrderService {
 
         order.setOrderStatus(OrderStatus.Completed);
         orderDAO.saveOrder(order);
+
+        return order;
     }
 
     private Double calculateTotalAmount(Order order) {

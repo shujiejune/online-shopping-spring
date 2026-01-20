@@ -72,11 +72,12 @@ public class ProductDAOImpl implements ProductDAO {
     }
 
     @Override
-    public void saveOrUpdateProduct(Product product) {
+    public Product saveOrUpdateProduct(Product product) {
         if (product.getId() == null) {
             getSession().persist(product);
         } else  {
             getSession().merge(product);
         }
+        return product;
     }
 }

@@ -2,10 +2,7 @@ package org.example.shopify.Service;
 
 import org.example.shopify.DAO.OrderDAO;
 import org.example.shopify.DAO.ProductDAO;
-import org.example.shopify.DTO.AdminProductPageResponseDTO;
-import org.example.shopify.DTO.AdminProductResponseDTO;
-import org.example.shopify.DTO.OrderPageResponseDTO;
-import org.example.shopify.DTO.OrderResponseDTO;
+import org.example.shopify.DTO.*;
 import org.example.shopify.Domain.Order;
 import org.example.shopify.Domain.OrderItem;
 import org.example.shopify.Domain.OrderStatus;
@@ -76,22 +73,41 @@ public class AdminService {
     }
 
     @Transactional
-    public void addProduct(Product product) {
+    public Product addProduct(ProductRequestDTO dto) {
+        Product product = new Product();
+
+        product.setName(dto.getName());
+        product.setDescription(dto.getDescription());
+        product.setWholesalePrice(dto.getWholesalePrice());
+        product.setRetailPrice(dto.getRetailPrice());
+        product.setQuantity(dto.getQuantity());
+
         productDAO.saveOrUpdateProduct(product);
+
+        return product;
     }
 
     @Transactional
-    public void updateProduct(Long id, Product updatedData) {
-        Product existing = productDAO.getProductById(id)
+    public Product updateProduct(ProductRequestDTO dto) {
+        Product product = productDAO.getProductById(dto.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
-        existing.setName(updatedData.getName());
-        existing.setDescription(updatedData.getDescription());
-        existing.setWholesalePrice(updatedData.getWholesalePrice());
-        existing.setRetailPrice(updatedData.getRetailPrice());
-        existing.setQuantity(updatedData.getQuantity());
+        product.setName(dto.getName());
+        product.setDescription(dto.getDescription());
+        product.setWholesalePrice(dto.getWholesalePrice());
+        product.setRetailPrice(dto.getRetailPrice());
+        product.setQuantity(dto.getQuantity());
 
-        productDAO.saveOrUpdateProduct(existing);
+        productDAO.saveOrUpdateProduct(product);
+
+        return product;
+    }
+
+    @Transactional
+    public void removeProduct(Long productId) {
+        Product product = productDAO.getProductById(productId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        productDAO.saveOrUpdateProduct(product);
     }
 
     @Transactional(readOnly = true)

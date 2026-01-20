@@ -11,5 +11,5 @@ public interface ProductDAO {
     List<Product> getPaginatedProducts(int page, int size);
     long getTotalProductsCount();
     long getInStockProductsCount();
-    void saveOrUpdateProduct(Product product);
+    Product saveOrUpdateProduct(Product product);
 }

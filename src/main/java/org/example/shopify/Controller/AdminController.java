@@ -1,6 +1,7 @@
 package org.example.shopify.Controller;
 
 import org.example.shopify.DTO.*;
+import org.example.shopify.Domain.Order;
 import org.example.shopify.Domain.Product;
 import org.example.shopify.Service.AdminService;
 import org.example.shopify.Service.OrderService;
@@ -29,14 +30,15 @@ public class AdminController {
     }
 
     @PutMapping("/orders/{id}/cancel")
-    public ResponseEntity<String> cancelOrder(@PathVariable Long id) {
-        orderService.cancelOrder(id);
-        return ResponseEntity.ok("Order has been cancelled and inventory restocked.");
+    public ResponseEntity<OrderResponseDTO> cancelOrder(@PathVariable Long id) {
+        Order order = orderService.cancelOrder(id);
+        return ResponseEntity.ok(mapToOrderDTO(order));
     }
 
     @PutMapping("/orders/{id}/complete")
-    public void completeOrder(@PathVariable Long id) {
-        orderService.completeOrder(id);
+    public ResponseEntity<OrderResponseDTO> completeOrder(@PathVariable Long id) {
+        Order order = orderService.completeOrder(id);
+        return ResponseEntity.ok(mapToOrderDTO(order));
     }
 
     @GetMapping("/products")
@@ -44,22 +46,29 @@ public class AdminController {
         return ResponseEntity.ok(adminService.getPaginatedProductDashboard(page));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/products/{id}")
     public ResponseEntity<AdminProductResponseDTO> getProductDetail(@PathVariable Long id) {
         AdminProductResponseDTO dto = adminService.getProductDetailForAdmin(id);
         return ResponseEntity.ok(dto);
     }
 
     @PostMapping("/products")
-    public ResponseEntity<String> addProduct(@RequestBody Product product) {
-        adminService.addProduct(product);
-        return ResponseEntity.ok("Product added successfully");
+    public ResponseEntity<AdminProductResponseDTO> addProduct(@RequestBody ProductRequestDTO request) {
+        Product product = adminService.addProduct(request);
+        return ResponseEntity.ok(mapToAdminProductDTO(product));
     }
 
     @PutMapping("/products/{id}")
-    public ResponseEntity<String> updateProduct(@PathVariable Long id, @RequestBody Product product) {
-        adminService.updateProduct(id, product);
-        return ResponseEntity.ok("Product updated successfully");
+    public ResponseEntity<AdminProductResponseDTO> updateProduct(@PathVariable Long id, @RequestBody ProductRequestDTO request) {
+        request.setId(id);
+        Product product = adminService.updateProduct(request);
+        return ResponseEntity.ok(mapToAdminProductDTO(product));
+    }
+
+    @DeleteMapping("/products/{id}")
+    public ResponseEntity<String> deleteProduct(@PathVariable Long id) {
+        adminService.removeProduct(id);
+        return ResponseEntity.ok("Product removed successfully");
     }
 
     @GetMapping("/stats/sold-count")
@@ -88,16 +97,44 @@ public class AdminController {
         return ResponseEntity.ok(mapToAdminProductDTOs(products));
     }
 
-    private List<AdminProductResponseDTO> mapToAdminProductDTOs(List<Product> products) {
-        return products.stream().map(p -> {
-            AdminProductResponseDTO dto = new AdminProductResponseDTO();
-            dto.setId(p.getId());
-            dto.setName(p.getName());
-            dto.setDescription(p.getDescription());
-            dto.setRetailPrice(p.getRetailPrice());
-            dto.setWholesalePrice(p.getWholesalePrice());
-            dto.setQuantity(p.getQuantity());
-            return dto;
+    private OrderResponseDTO mapToOrderDTO(Order order) {
+        OrderResponseDTO dto = new OrderResponseDTO();
+        dto.setOrderId(order.getId());
+        dto.setUsername(order.getUser().getUsername());
+        dto.setDatePlaced(order.getDatePlaced());
+        dto.setOrderStatus(order.getOrderStatus().toString());
+        dto.setTotalAmount(order.getTotalAmount());
+        List<OrderItemDTO> itemDtos = mapToItemDTOs(order);
+
+        dto.setItems(itemDtos);
+
+        return dto;
+    }
+
+    private List<OrderItemDTO> mapToItemDTOs(Order order) {
+        return order.getOrderItems().stream().map(item -> {
+            OrderItemDTO itemDto = new OrderItemDTO();
+            itemDto.setOrderItemId(item.getId());
+            itemDto.setProductId(item.getProduct().getId());
+            itemDto.setProductName(item.getProduct().getName());
+            itemDto.setQuantity(item.getQuantity());
+            itemDto.setPurchasedPrice(item.getPurchasedPrice());
+            return itemDto;
         }).collect(Collectors.toList());
+    }
+
+    private AdminProductResponseDTO mapToAdminProductDTO(Product product) {
+        AdminProductResponseDTO dto = new AdminProductResponseDTO();
+        dto.setId(product.getId());
+        dto.setName(product.getName());
+        dto.setDescription(product.getDescription());
+        dto.setRetailPrice(product.getRetailPrice());
+        dto.setWholesalePrice(product.getWholesalePrice());
+        dto.setQuantity(product.getQuantity());
+        return dto;
+    }
+
+    private List<AdminProductResponseDTO> mapToAdminProductDTOs(List<Product> products) {
+        return products.stream().map(this::mapToAdminProductDTO).collect(Collectors.toList());
     }
 }
