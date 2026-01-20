@@ -11,23 +11,26 @@ import org.example.shopify.Domain.*;
 import org.example.shopify.Exception.IllegalOrderStateException;
 import org.example.shopify.Exception.NotEnoughInventoryException;
 import org.example.shopify.Exception.ResourceNotFoundException;
+import org.example.shopify.Mapper.OrderMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class OrderService {
     private final OrderDAO orderDAO;
     private final ProductDAO productDAO;
     private final UserDAO userDAO;
+    private final OrderMapper orderMapper;
 
-    public OrderService(OrderDAO orderDAO, ProductDAO productDAO, UserDAO userDAO) {
+    public OrderService(OrderDAO orderDAO, ProductDAO productDAO, UserDAO userDAO,  OrderMapper orderMapper) {
         this.orderDAO = orderDAO;
         this.productDAO = productDAO;
         this.userDAO = userDAO;
+        this.orderMapper = orderMapper;
     }
 
     @Transactional(readOnly = true)
@@ -46,25 +49,7 @@ public class OrderService {
         long totalElements = orderDAO.getOrdersCountByUserId(userId);
 
         // 3. Map Entities to DTOs
-        List<OrderResponseDTO> orderDtos = orders.stream()
-                .map(order -> {
-                    OrderResponseDTO dto = new OrderResponseDTO();
-                    dto.setOrderId(order.getId());
-                    dto.setOrderStatus(order.getOrderStatus().toString());
-                    dto.setDatePlaced(order.getDatePlaced());
-
-                    List<OrderItemDTO> itemDtos = order.getOrderItems().stream()
-                            .map(item -> new OrderItemDTO(
-                                    item.getId(),
-                                    item.getProduct().getId(), // The link ID
-                                    item.getProduct().getName(),
-                                    item.getQuantity(),
-                                    item.getPurchasedPrice()
-                            )).collect(Collectors.toList());
-
-                    dto.setItems(itemDtos);
-                    return dto;
-                }).collect(Collectors.toList());
+        List<OrderResponseDTO> orderDtos = orderMapper.mapToOrderResponseDTOList(orders);
 
         // 4. Wrap in Page Response
         int totalPages = (int) Math.ceil((double) totalElements / pageSize);
@@ -80,9 +65,8 @@ public class OrderService {
         // 2. Create the parent Order entity
         Order order = new Order();
         order.setUser(user);
-        order.setDatePlaced(order.getDatePlaced());
+        order.setDatePlaced(LocalDateTime.now());
         order.setOrderStatus(OrderStatus.Processing);
-        order.setTotalAmount(calculateTotalAmount(order));
 
         List<OrderItem> orderItems = new ArrayList<>();
 
@@ -115,6 +99,7 @@ public class OrderService {
 
         // 4. Link items to order and save
         order.setOrderItems(orderItems);
+        order.setTotalAmount(calculateTotalAmount(order));
         orderDAO.saveOrder(order);
 
         return order;

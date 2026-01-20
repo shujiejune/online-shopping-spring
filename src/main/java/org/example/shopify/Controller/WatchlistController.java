@@ -4,6 +4,7 @@ import org.example.shopify.DTO.ProductResponseDTO;
 import org.example.shopify.Domain.Product;
 import org.example.shopify.Domain.User;
 import org.example.shopify.Domain.Watchlist;
+import org.example.shopify.Mapper.ProductMapper;
 import org.example.shopify.Service.UserService;
 import org.example.shopify.Service.WatchlistService;
 import org.springframework.http.ResponseEntity;
@@ -18,10 +19,12 @@ import java.util.List;
 public class WatchlistController {
     private final WatchlistService watchlistService;
     private final UserService userService;
+    private final ProductMapper productMapper;
 
-    public WatchlistController(WatchlistService watchlistService, UserService userService) {
+    public WatchlistController(WatchlistService watchlistService, UserService userService,  ProductMapper productMapper) {
         this.watchlistService = watchlistService;
         this.userService = userService;
+        this.productMapper = productMapper;
     }
 
     @PostMapping("/add/{productId}")
@@ -52,11 +55,7 @@ public class WatchlistController {
         List<ProductResponseDTO> dtos = new ArrayList<>();
         for (Watchlist entry : watchlistEntries) {
             Product p = entry.getProduct();
-            ProductResponseDTO dto = new ProductResponseDTO();
-            dto.setId(p.getId());
-            dto.setName(p.getName());
-            dto.setDescription(p.getDescription());
-            dto.setRetailPrice(p.getRetailPrice());
+            ProductResponseDTO dto = productMapper.mapToProductResponseDTO(p);
             dtos.add(dto);
         }
 

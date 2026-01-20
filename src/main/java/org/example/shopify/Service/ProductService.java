@@ -9,6 +9,7 @@ import org.example.shopify.Domain.OrderItem;
 import org.example.shopify.Domain.OrderStatus;
 import org.example.shopify.Domain.Product;
 import org.example.shopify.Exception.ResourceNotFoundException;
+import org.example.shopify.Mapper.ProductMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,10 +23,12 @@ import java.util.stream.Collectors;
 public class ProductService {
     private final ProductDAO productDAO;
     private final OrderDAO orderDAO;
+    private final ProductMapper productMapper;
 
-    public ProductService(ProductDAO productDAO, OrderDAO orderDAO) {
+    public ProductService(ProductDAO productDAO, OrderDAO orderDAO,  ProductMapper productMapper) {
         this.productDAO = productDAO;
         this.orderDAO = orderDAO;
+        this.productMapper = productMapper;
     }
 
     @Transactional(readOnly = true)
@@ -42,14 +45,7 @@ public class ProductService {
         long totalProducts = productDAO.getInStockProductsCount();
         int totalPages = (int) Math.ceil((double) totalProducts / pageSize);
 
-        List<ProductResponseDTO> dtos = new ArrayList<>();
-        for (Product p : products) {
-            ProductResponseDTO dto = new ProductResponseDTO();
-            dto.setId(p.getId());
-            dto.setName(p.getName());
-            dto.setRetailPrice(p.getRetailPrice());
-            dtos.add(dto);
-        }
+        List<ProductResponseDTO> dtos = productMapper.mapToProductDTOList(products);
 
         return new ProductPageResponseDTO(dtos, page, totalPages, totalProducts);
     }

@@ -8,20 +8,26 @@ import org.example.shopify.Domain.OrderItem;
 import org.example.shopify.Domain.OrderStatus;
 import org.example.shopify.Domain.Product;
 import org.example.shopify.Exception.ResourceNotFoundException;
+import org.example.shopify.Mapper.OrderMapper;
+import org.example.shopify.Mapper.ProductMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class AdminService {
     private final OrderDAO orderDAO;
     private final ProductDAO productDAO;
+    private final OrderMapper orderMapper;
+    private final ProductMapper productMapper;
 
-    public AdminService(OrderDAO orderDAO,  ProductDAO productDAO) {
+    public AdminService(OrderDAO orderDAO,  ProductDAO productDAO,
+                        OrderMapper orderMapper,  ProductMapper productMapper) {
         this.orderDAO = orderDAO;
         this.productDAO = productDAO;
+        this.orderMapper = orderMapper;
+        this.productMapper = productMapper;
     }
 
     @Transactional(readOnly = true)
@@ -33,19 +39,7 @@ public class AdminService {
         long totalOrders = orderDAO.getTotalOrdersCount();
         int totalPages = (int) Math.ceil((double) totalOrders / pageSize);
 
-        List<OrderResponseDTO> dtos = new ArrayList<>();
-        for (Order o : orders) {
-            OrderResponseDTO dto = new OrderResponseDTO();
-            dto.setOrderId(o.getId());
-            dto.setUsername(o.getUser().getUsername());
-            dto.setDatePlaced(o.getDatePlaced());
-            dto.setOrderStatus(o.getOrderStatus().toString());
-            dto.setTotalAmount(o.getTotalAmount());
-
-            // Leave dto.setItems(null) here because the dashboard list
-            // shouldn't show all products until the admin clicks a specific order.
-            dtos.add(dto);
-        }
+        List<OrderResponseDTO> dtos = orderMapper.mapToOrderResponseDTOList(orders);
 
         return new OrderPageResponseDTO(dtos, page, totalPages, totalOrders);
     }
@@ -58,46 +52,25 @@ public class AdminService {
         long totalProducts = productDAO.getTotalProductsCount();
         int totalPages = (int) Math.ceil((double) totalProducts / pageSize);
 
-        List<AdminProductResponseDTO> views = new ArrayList<>();
-        for (Product p : products) {
-            AdminProductResponseDTO view = new AdminProductResponseDTO();
-            view.setId(p.getId());
-            view.setName(p.getName());
-            view.setRetailPrice(p.getRetailPrice());
-            view.setWholesalePrice(p.getWholesalePrice());
-            view.setQuantity(p.getQuantity());
-            views.add(view);
-        }
+        List<AdminProductResponseDTO> views = productMapper.mapToAdminProductDTOList(products);
 
         return new AdminProductPageResponseDTO(views, page, totalPages, totalProducts);
     }
 
     @Transactional
     public Product addProduct(ProductRequestDTO dto) {
-        Product product = new Product();
-
-        product.setName(dto.getName());
-        product.setDescription(dto.getDescription());
-        product.setWholesalePrice(dto.getWholesalePrice());
-        product.setRetailPrice(dto.getRetailPrice());
-        product.setQuantity(dto.getQuantity());
-
+        Product product = productMapper.mapRequestToProduct(dto);
         productDAO.saveOrUpdateProduct(product);
-
         return product;
     }
 
     @Transactional
     public Product updateProduct(ProductRequestDTO dto) {
-        Product product = productDAO.getProductById(dto.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        if (!productDAO.getProductById(dto.getId()).isPresent()) {
+            throw new ResourceNotFoundException("Product not found");
+        }
 
-        product.setName(dto.getName());
-        product.setDescription(dto.getDescription());
-        product.setWholesalePrice(dto.getWholesalePrice());
-        product.setRetailPrice(dto.getRetailPrice());
-        product.setQuantity(dto.getQuantity());
-
+        Product product =  productMapper.mapRequestToProduct(dto);
         productDAO.saveOrUpdateProduct(product);
 
         return product;
