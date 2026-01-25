@@ -44,7 +44,7 @@ public class GlobalExceptionHandler {
     }
 
     // 400 Bad Request
-    @ExceptionHandler(NotEnoughInventoryException.class)
+    @ExceptionHandler(EmptyCartCheckoutException.class)
     public ResponseEntity<String> handleEmptyCartException(EmptyCartCheckoutException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
