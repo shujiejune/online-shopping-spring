@@ -62,14 +62,18 @@ public class AdminService {
 
     @Transactional
     public Product updateProduct(ProductRequestDTO dto) {
-        if (!productDAO.getProductById(dto.getId()).isPresent()) {
-            throw new ResourceNotFoundException("Product not found");
-        }
+        Product existingProduct = productDAO.getProductById(dto.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
-        Product product =  productMapper.mapRequestToProduct(dto);
-        productDAO.saveOrUpdateProduct(product);
+        // cannot use ProductMapper or the frontend will create a new record
+        existingProduct.setName(dto.getName());
+        existingProduct.setDescription(dto.getDescription());
+        existingProduct.setWholesalePrice(dto.getWholesalePrice());
+        existingProduct.setRetailPrice(dto.getRetailPrice());
+        existingProduct.setQuantity(dto.getQuantity());
+        productDAO.saveOrUpdateProduct(existingProduct);
 
-        return product;
+        return existingProduct;
     }
 
     @Transactional

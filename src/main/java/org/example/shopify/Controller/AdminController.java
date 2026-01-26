@@ -64,7 +64,7 @@ public class AdminController {
         return ResponseEntity.ok(dto);
     }
 
-    @PostMapping("/products")
+    @PostMapping("/products/new")
     public ResponseEntity<AdminProductResponseDTO> addProduct(@RequestBody ProductRequestDTO request) {
         Product product = adminService.addProduct(request);
         AdminProductResponseDTO dto = productMapper.mapToAdminProductResponseDTO(product);
