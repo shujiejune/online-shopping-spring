@@ -38,7 +38,7 @@ public class ProductDAOImpl implements ProductDAO {
 
         Query<Product> query = getSession().createQuery(cq);
 
-        query.setFirstResult((page - 1) * size);
+        query.setFirstResult(page * size);
         query.setMaxResults(size);
 
         return query.getResultList();
