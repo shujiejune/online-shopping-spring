@@ -34,8 +34,11 @@ public class ProductController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<ProductPageResponseDTO> getInStockProducts(@RequestParam(defaultValue = "1") int page) {
-        return ResponseEntity.ok(productService.getPaginatedInStockProducts(page));
+    public ResponseEntity<ProductPageResponseDTO> getInStockProducts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "15") int size
+    ) {
+        return ResponseEntity.ok(productService.getPaginatedInStockProducts(page, size));
     }
 
     @GetMapping("/recent")

@@ -53,11 +53,11 @@ public class OrderController {
 
     @GetMapping("/my-orders")
     public ResponseEntity<OrderPageResponseDTO> getMyOrders(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
 
         Long userId = getCurrentUserId();
-        OrderPageResponseDTO response = orderService.getOrdersByUserId(userId, page);
+        OrderPageResponseDTO response = orderService.getOrdersByUserId(userId, page, size);
 
         return ResponseEntity.ok(response);
     }

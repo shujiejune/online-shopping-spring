@@ -40,8 +40,7 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public OrderPageResponseDTO getOrdersByUserId(Long userId, int page) {
-        int pageSize = 5;
+    public OrderPageResponseDTO getOrdersByUserId(Long userId, int page, int pageSize) {
         // 1. Fetch the specific page of Order entities
         List<Order> orders = orderDAO.getPaginatedOrdersByUserId(userId, page, pageSize);
 

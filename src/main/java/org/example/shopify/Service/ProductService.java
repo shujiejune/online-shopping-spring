@@ -38,9 +38,7 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public ProductPageResponseDTO getPaginatedInStockProducts(int page) {
-        int pageSize = 10;
-
+    public ProductPageResponseDTO getPaginatedInStockProducts(int page, int pageSize) {
         List<Product> products = productDAO.getPaginatedInStockProducts(page, pageSize);
         long totalProducts = productDAO.getInStockProductsCount();
         int totalPages = (int) Math.ceil((double) totalProducts / pageSize);

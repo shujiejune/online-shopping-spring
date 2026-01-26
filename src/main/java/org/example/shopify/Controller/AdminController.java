@@ -31,8 +31,11 @@ public class AdminController {
     }
 
     @GetMapping("/orders")
-    public ResponseEntity<OrderPageResponseDTO> getAllOrders(@RequestParam(defaultValue = "1") int page) {
-        return ResponseEntity.ok(adminService.getPaginatedOrderDashboard(page));
+    public ResponseEntity<OrderPageResponseDTO> getAllOrders(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size
+    ) {
+        return ResponseEntity.ok(adminService.getPaginatedOrderDashboard(page, size));
     }
 
     @PutMapping("/orders/{id}/cancel")
@@ -48,8 +51,11 @@ public class AdminController {
     }
 
     @GetMapping("/products")
-    public ResponseEntity<AdminProductPageResponseDTO> getAllProducts(@RequestParam(defaultValue = "1") int page) {
-        return ResponseEntity.ok(adminService.getPaginatedProductDashboard(page));
+    public ResponseEntity<AdminProductPageResponseDTO> getAllProducts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "15") int size
+    ) {
+        return ResponseEntity.ok(adminService.getPaginatedProductDashboard(page, size));
     }
 
     @GetMapping("/products/{id}")

@@ -31,9 +31,7 @@ public class AdminService {
     }
 
     @Transactional(readOnly = true)
-    public OrderPageResponseDTO getPaginatedOrderDashboard(int page) {
-        int pageSize = 5;
-
+    public OrderPageResponseDTO getPaginatedOrderDashboard(int page, int pageSize) {
         List<Order> orders = orderDAO.getPaginatedOrders(page, pageSize);
 
         long totalOrders = orderDAO.getTotalOrdersCount();
@@ -45,9 +43,7 @@ public class AdminService {
     }
 
     @Transactional(readOnly = true)
-    public AdminProductPageResponseDTO getPaginatedProductDashboard(int page) {
-        int pageSize = 10;
-
+    public AdminProductPageResponseDTO getPaginatedProductDashboard(int page, int pageSize) {
         List<Product> products = productDAO.getPaginatedProducts(page, pageSize);
         long totalProducts = productDAO.getTotalProductsCount();
         int totalPages = (int) Math.ceil((double) totalProducts / pageSize);

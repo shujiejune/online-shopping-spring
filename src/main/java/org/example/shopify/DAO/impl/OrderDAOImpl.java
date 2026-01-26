@@ -42,7 +42,7 @@ public class OrderDAOImpl implements OrderDAO {
         return getSession().createQuery(
                 "FROM Order o WHERE o.user.id = :userId ORDER BY o.datePlaced DESC", Order.class)
                 .setParameter("userId", userId)
-                .setFirstResult((page - 1) * pageSize)
+                .setFirstResult(page * pageSize)
                 .setMaxResults(pageSize)
                 .getResultList();
     }
@@ -68,7 +68,7 @@ public class OrderDAOImpl implements OrderDAO {
     public List<Order> getPaginatedOrders(int page, int pageSize) {
         return getSession().createQuery(
                         "SELECT o FROM Order o JOIN FETCH o.user ORDER BY o.datePlaced DESC", Order.class)
-                .setFirstResult((page - 1) * pageSize)
+                .setFirstResult(page * pageSize)
                 .setMaxResults(pageSize)
                 .getResultList();
     }

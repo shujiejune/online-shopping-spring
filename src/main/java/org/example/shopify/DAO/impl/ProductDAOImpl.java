@@ -48,7 +48,7 @@ public class ProductDAOImpl implements ProductDAO {
     public List<Product> getPaginatedProducts(int page, int size) {
         return sessionFactory.getCurrentSession()
                 .createQuery("FROM Product", Product.class)
-                .setFirstResult((page - 1) * size)
+                .setFirstResult(page * size)
                 .setMaxResults(size)
                 .getResultList();
     }
