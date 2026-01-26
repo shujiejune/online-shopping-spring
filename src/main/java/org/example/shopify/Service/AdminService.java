@@ -80,7 +80,7 @@ public class AdminService {
     public void removeProduct(Long productId) {
         Product product = productDAO.getProductById(productId)
                         .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-        productDAO.saveOrUpdateProduct(product);
+        productDAO.deleteProduct(product);
     }
 
     @Transactional(readOnly = true)

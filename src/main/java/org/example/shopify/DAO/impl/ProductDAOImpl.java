@@ -80,4 +80,9 @@ public class ProductDAOImpl implements ProductDAO {
         }
         return product;
     }
+
+    @Override
+    public void deleteProduct(Product product) {
+        getSession().remove(product);
+    }
 }

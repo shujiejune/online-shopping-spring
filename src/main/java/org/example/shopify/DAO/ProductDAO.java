@@ -12,4 +12,5 @@ public interface ProductDAO {
     long getTotalProductsCount();
     long getInStockProductsCount();
     Product saveOrUpdateProduct(Product product);
+    void deleteProduct(Product product);
 }
