@@ -53,7 +53,7 @@ public class OrderController {
 
     @GetMapping("/my-orders")
     public ResponseEntity<OrderPageResponseDTO> getMyOrders(
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
 
         Long userId = getCurrentUserId();

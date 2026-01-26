@@ -36,7 +36,7 @@ public class OrderMapper {
         dto.setUsername(order.getUser().getUsername());
         dto.setDatePlaced(order.getDatePlaced());
         dto.setOrderStatus(order.getOrderStatus().toString());
-        dto.setTotalAmount(order.getTotalAmount());
+        dto.setTotalAmount(order.getTotalAmount() != null ? order.getTotalAmount() : 0.0);
 
         List<OrderItemDTO> itemDtos = mapToItemDTOList(order);
         dto.setItems(itemDtos);

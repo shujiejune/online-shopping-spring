@@ -33,4 +33,16 @@ public class Order {
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems;
+
+    @PrePersist
+    @PreUpdate
+    public void calculateTotal() {
+        if (this.orderItems != null && !this.orderItems.isEmpty()) {
+            this.totalAmount = this.orderItems.stream()
+                    .mapToDouble(item -> item.getPurchasedPrice() * item.getQuantity())
+                    .sum();
+        } else {
+            this.totalAmount = 0.0;
+        }
+    }
 }

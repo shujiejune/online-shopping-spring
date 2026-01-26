@@ -99,7 +99,7 @@ public class OrderService {
 
         // 4. Link items to order and save
         order.setOrderItems(orderItems);
-        order.setTotalAmount(calculateTotalAmount(order));
+        order.setTotalAmount(order.getTotalAmount());
         orderDAO.saveOrder(order);
 
         return order;
@@ -143,11 +143,5 @@ public class OrderService {
         orderDAO.saveOrder(order);
 
         return order;
-    }
-
-    private Double calculateTotalAmount(Order order) {
-        return order.getOrderItems().stream()
-                .mapToDouble(item -> item.getPurchasedPrice() * item.getQuantity())
-                .sum();
     }
 }
